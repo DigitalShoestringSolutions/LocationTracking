@@ -1,0 +1,17 @@
+{
+  "id": "line_1",
+  "locations": {
+    "title": "Locations",
+    "tag": "loc"
+  },
+  "mqtt": {
+    "host": "",
+    "port": 9001,
+    "prefix": []
+  },
+  "api": {
+    "host": "",
+    "port": 8002,
+    "type": "barcode"
+  }
+}

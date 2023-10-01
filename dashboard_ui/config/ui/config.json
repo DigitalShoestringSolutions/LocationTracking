@@ -1,0 +1,24 @@
+{
+  "locations": {
+    "title": "Locations",
+    "tag": "loc"
+  },
+  "items":{
+    "tag":"prodtype"
+  },
+  "mqtt": {
+    "host": "",
+    "port": 9001,
+    "prefix": []
+  },
+  "api": {
+    "host": "",
+    "port": 8002,
+    "type": "barcode"
+  },
+  "db": {
+    "host": "",
+    "port": 8001
+  },
+  "shown_locations": "*"
+}

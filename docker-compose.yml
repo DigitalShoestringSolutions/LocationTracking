@@ -1,0 +1,79 @@
+version: '2'
+
+services:
+    user-input-dc:
+        extends:
+            file: user_input_dc/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - user-input-dc.docker.local
+        logging:
+                driver: syslog
+                options:
+                        tag: docker-user-input-dc
+        restart: unless-stopped
+        depends_on:
+            - "mqtt_broker"
+    locations-sds:
+        extends:
+            file: locations_sds/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - locations-sds.docker.local
+        logging:
+                driver: syslog
+                options:
+                        tag: docker-locations-sds
+        restart: unless-stopped
+        env_file:
+            - django_secret_key 
+    identity-sds:
+        extends:
+            file: identity_sds/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - identity-sds.docker.local
+        logging:
+                driver: syslog
+                options:
+                        tag: docker-identity-sds
+        restart: unless-stopped
+        env_file:
+            - django_secret_key 
+
+    mqtt_broker:
+        extends:
+            file: mqtt_broker/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - mqtt.docker.local
+        logging:
+                driver: syslog
+                options:
+                        tag: docker-mqtt-broker
+        restart: unless-stopped
+    dashboard:
+        extends:
+            file: dashboard_ui/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - dashboard-ui.docker.local
+        logging:
+                driver: syslog
+                options:
+                        tag: docker-dashboard-ui
+        restart: unless-stopped
+        depends_on:
+            - "mqtt_broker"
+networks:
+    internal:
