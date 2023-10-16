@@ -6,6 +6,7 @@ from rest_framework.decorators import action, api_view, permission_classes, rend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework.response import Response
+from rest_framework_csv.renderers import CSVRenderer
 import datetime
 import dateutil.parser
 
@@ -13,10 +14,10 @@ from .models import State
 from .serializers import StateSerializer
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def getAll(request):
     at = request.GET.get('t', None)
-    q = Q(end__isnull=True)
+    q = Q(end__isnull=True) & ~Q(quantity=0)
 
     if at:
         print(f"get all at {at}")
@@ -27,7 +28,7 @@ def getAll(request):
     return Response(serializer.data)
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def forItem(request,item_id):
     at = request.GET.get('t', None)
     q = Q(end__isnull=True)
@@ -42,7 +43,7 @@ def forItem(request,item_id):
     return Response(serializer.data)
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def atLocLink(request,location_link):
     at = request.GET.get('t', None)
     q = Q(end__isnull=True)
@@ -57,7 +58,7 @@ def atLocLink(request,location_link):
     return Response(serializer.data)
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def historyAll(request):
     t_start = request.GET.get('from', None)
     t_end = request.GET.get('to', None)
@@ -78,7 +79,7 @@ def historyAll(request):
     return Response(serializer.data)
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def historyFor(request,item_id):
     t_start = request.GET.get('from', None)
     t_end = request.GET.get('to', None)
@@ -100,7 +101,7 @@ def historyFor(request,item_id):
     return Response(serializer.data)
 
 @api_view(('GET',))
-@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer,CSVRenderer))
 def historyAt(request,location_link):
     t_start = request.GET.get('from', None)
     t_end = request.GET.get('to', None)

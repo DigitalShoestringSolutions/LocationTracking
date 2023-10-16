@@ -25,7 +25,7 @@ urlpatterns = [
     path('',redirect_root),
     path('admin/', admin.site.urls),
     path('state/', include('state.urls')),
-    # path('events/',include('events.url')),
+    path('events/',include('state.event_urls')),
 ]
 
 admin.site.site_header = "Location Tracking Admin"

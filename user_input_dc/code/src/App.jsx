@@ -39,7 +39,7 @@ function App() {
           setError("ERROR: Unable to load configuration!")
         }
       }).catch((err) => {
-        console.err(err);
+        console.error(err);
         setError("ERROR: Unable to load configuration!")
       })
     }
@@ -110,7 +110,7 @@ function Base({ setLocationList, config }) {
           setError("Unable to load list of locations - please try refresh")
         }
       }).catch((err) => {
-        console.err(err);
+        console.error(err);
         setError("ERROR: Unable to load location list!")
       })
     }
@@ -233,7 +233,7 @@ function Dashboard({ config = {}, location_list }) {
       setItemReload(false);
 
       let url = (config.api.host ? config.api.host : window.location.host) + (config.api.port ? ":" + config.api.port : "")
-      APIBackend.api_get('http://' + url + '/id/get/' + config.api.type + '/' + barcode + "?full").then((response) => {
+      APIBackend.api_get('http://' + url + '/id/get/' + config.api.type + '/' + encodeURIComponent(barcode) + "?full").then((response) => {
         if (response.status === 200) {
           console.log("id", response.payload)
           setItemLoaded(true)
@@ -252,35 +252,44 @@ function Dashboard({ config = {}, location_list }) {
   }, [barcode, config.api, dispatch, from, item_loaded, item_pending, item_reload])
 
   React.useEffect(() => {
-    if (!barcode) {
+    if (!current_item) {
+      console.log("focus barcode")
       if (barcodeRef?.current)
         barcodeRef.current.focus()
-    } else if (!from) {
+    } else if (!current_item?.individual && !from) {
+      console.log("focus from")
       if (fromRef?.current)
         fromRef.current.focus()
     } else if (!to) {
+      console.log("focus to")
       if (toRef?.current)
         toRef.current.focus()
-    } else if (current_item?.individual) {
-      if (submitRef?.current)
-        submitRef.current.focus()
     } else {
-      if (quantityRef?.current)
-        quantityRef.current.focus()
+      console.log("focus submit")
+      if (!current_item?.individual) {
+        console.log("focus quantity")
+        if (quantityRef?.current)
+          quantityRef.current.focus()
+      } else {
+        if (submitRef?.current)
+          submitRef.current.focus()
+      }
     }
-  }, [barcode, current_item, from, to])
+  }, [current_item, from, to])
 
   const handleSubmit = () => {
     const payload = {
       item: current_item.id,
-      from: from,
       to: to,
     }
-    if (quantity) {
+    let topic = "location_update/" + to
+
+    if (!current_item.individual) {
       payload.quantity = Number(quantity)
+      payload.from = from
+      topic += "/" + from
     }
 
-    const topic = "location_update/" + to + "/" + from
     try {
       sendJsonMessage(topic, payload);
       add_toast(toast_dispatch, { header: "Sent", body: "" })
@@ -316,7 +325,7 @@ function Dashboard({ config = {}, location_list }) {
                   <Button
                     ref={submitRef}
                     variant="success"
-                    disabled={current_item == null || (!current_item?.individual && !quantity) || !to || !from}
+                    disabled={current_item == null || (!current_item?.individual && (!quantity || !from)) || !to}
                     onClick={handleSubmit}
                   >Submit</Button>
                 </div>
