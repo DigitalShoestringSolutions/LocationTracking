@@ -1,6 +1,7 @@
 from django.db.models import Q
 from django.http import HttpResponse
 from django.conf import settings
+from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes, renderer_classes
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
@@ -10,8 +11,14 @@ import datetime
 import dateutil.parser
 import re
 
+from openpyxl import load_workbook
+import xlrd
+import os
+import tempfile
+
 from .models import Identifier, IdentifierType, IdentifierPattern, IdentityEntry, IdentityType
 from .serializers import IdentitySerializer, IdentitySerializerFull
+from .forms import UploadFileForm
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
@@ -44,6 +51,21 @@ def identify(request,identifier_type,identifier):
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+def getID(request,id):
+    *id_type,id_num = id.split('@')
+    try:
+        identity = IdentityEntry.objects.get(auto_id=id_num)
+    except IdentityEntryType.DoesNotExist:
+        return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
+        
+    serializer = IdentitySerializerFull(identity)
+
+    return Response(serializer.data)
+
+
+
+@api_view(('GET',))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
 def listByIDType(request,id_type):
     full = request.GET.get("full",False)
     try:
@@ -58,6 +80,77 @@ def listByIDType(request,id_type):
     except IdentityType.DoesNotExist:
         return Response({"reason":"Identity Type Not Found"},status=status.HTTP_400_BAD_REQUEST)
 
+def uploadIdentities(request):
+    if request.method == "POST":
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            results = handle_upload(request.FILES["file"])
+            print(results)
+            return render(request,"upload_done.html",{"results":results})
+    else:
+        form = UploadFileForm()
+    return render(request,"upload_form.html",{"form":form})
 
+def handle_upload(file_obj):
+    acc = {'list':[],'created':[],'error':[]}
+    filename = file_obj.name
 
+    _, file_extension = os.path.splitext(filename)
+    if file_extension == ".xlsx":
+        wb = load_workbook(filename = file_obj)
+        ws = wb.active
 
+        cell_range = ws['A']
+
+        for cell in cell_range[1:]:
+            if cell.value is not None:
+                type_tag = ws[f'A{cell.row}'].value
+                id_name = ws[f'B{cell.row}'].value
+                idfier_type_tag = ws[f'C{cell.row}'].value
+                idfier_value = ws[f'D{cell.row}'].value
+
+                handle_row(type_tag,id_name,idfier_type_tag,idfier_value, acc)
+
+    elif file_extension == ".xls":
+        fd,path = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd,'wb') as tmp:
+                tmp.write(file_obj.read())
+            wb = xlrd.open_workboo(path)
+            ws = wb.sheet_by_index(0)
+            
+            for nx in range(1,ws.nrows):
+                cell = ws.cell(nx,0)
+                if cell.ctype != 0:
+                    type_tag = ws.cell(nx,0).value
+                    id_name = ws.cell(nx,1).value
+                    idfier_type_tag = ws.cell(nx,2).value
+                    idfier_value = ws.cell(nx,3).value
+
+                    handle_row(type_tag,id_name,idfier_type_tag,idfier_value,acc)
+        finally:
+            os.remove(path)
+
+    return acc
+
+def handle_row(ttag,id_name,idf_ttag,idf_v,acc):
+    try:
+        id_t = IdentityType.objects.get(tag=ttag)
+        id,id_created = IdentityEntry.objects.get_or_create(name=id_name,type=id_t)
+
+        if id_created:
+            print(f"Created ID: {id_t.title}:{id_name}")
+            acc['created'].append(f"ID: {id_t.title}:{id.name}")
+
+        idf_t = IdentifierType.objects.get(tag=idf_ttag)
+        idf, idf_created = Identifier.objects.get_or_create(type=idf_t,value=idf_v,target=id)
+
+        if idf_created:
+            print(f"Created IDFR: {idf_t.title}:{idf_v}")
+            acc['created'].append(f"IDENTIFIER: {idf_t.title}:{idf.value}")
+
+        acc['list'].append(f"{idf_t.title}:{idf.value} => {id_t.title}:{id.name}")
+    except Exception as e:
+        print(f"Failed on {ttag}:{id_name},{idf_ttag}:{idf_v}")
+        print(e)
+        acc['error'].append(f"{ttag}:{id_name}<=>{idf_ttag}:{idf_v}")

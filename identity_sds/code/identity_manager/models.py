@@ -62,6 +62,9 @@ class Identifier(models.Model):
     type = models.ForeignKey(IdentifierType, on_delete=models.CASCADE, related_name="identifiers")
     target = models.ForeignKey(IdentityEntry, on_delete=models.CASCADE, related_name = "identifiers")
 
+    def __str__(self):
+        return f"{self.type.title}:{self.value}"
+
 class IdentifierPattern(models.Model):
     auto_id = models.BigAutoField(primary_key=True)
     pattern = models.CharField(max_length=50, help_text="Regex pattern to extract details from barcode")

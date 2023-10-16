@@ -9,9 +9,10 @@ from django.shortcuts import redirect
 
 
 urlpatterns= [
-        # path('',redirect_root), 
         path('list/<str:id_type>',views.listByIDType), 
-        path('get/<str:identifier_type>/<str:identifier>',views.identify), 
+        path('get/<str:identifier_type>/<str:identifier>',views.identify),
+        path('upload',views.uploadIdentities),
+        path('<str:id>',views.getID), 
     ]
 
 
