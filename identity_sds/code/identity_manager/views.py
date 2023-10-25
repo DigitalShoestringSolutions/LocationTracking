@@ -10,6 +10,7 @@ from rest_framework.response import Response
 import datetime
 import dateutil.parser
 import re
+import urllib
 
 from openpyxl import load_workbook
 import xlrd
@@ -17,7 +18,7 @@ import os
 import tempfile
 
 from .models import Identifier, IdentifierType, IdentifierPattern, IdentityEntry, IdentityType
-from .serializers import IdentitySerializer, IdentitySerializerFull
+from .serializers import IdentitySerializer, IdentitySerializerFull, IdentityTypeSerializer
 from .forms import UploadFileForm
 
 @api_view(('GET',))
@@ -51,14 +52,25 @@ def identify(request,identifier_type,identifier):
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
-def getID(request,id):
-    *id_type,id_num = id.split('@')
+def getID(request,id=None):
+    if id is not None:
+        ids = [id]
+    else:
+        raw_ids = request.GET.getlist("id")
+        ids = [urllib.parse.unquote(id) for id in raw_ids]
+
+    print(ids)
+    id_nums = []
+    for id_entry in ids:
+        *id_type,id_num = id_entry.split('@')
+        id_nums.append(id_num)
+    
     try:
-        identity = IdentityEntry.objects.get(auto_id=id_num)
-    except IdentityEntryType.DoesNotExist:
+        identities = IdentityEntry.objects.filter(auto_id__in=id_nums)
+    except IdentityEntry.DoesNotExist:
         return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
         
-    serializer = IdentitySerializerFull(identity)
+    serializer = IdentitySerializerFull(identities,many=True)
 
     return Response(serializer.data)
 
@@ -79,6 +91,13 @@ def listByIDType(request,id_type):
 
     except IdentityType.DoesNotExist:
         return Response({"reason":"Identity Type Not Found"},status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(('GET',))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+def listTypes(request):
+    qs = IdentityType.objects.all()
+    serializer = IdentityTypeSerializer(qs,many=True)
+    return Response(serializer.data)
 
 def uploadIdentities(request):
     if request.method == "POST":

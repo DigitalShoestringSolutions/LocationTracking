@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import IdentityEntry
+from .models import IdentityEntry, IdentityType
 
 class IdentitySerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,4 +26,7 @@ class IdentitySerializerFull(serializers.ModelSerializer):
         return rep
 
 
-
+class IdentityTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=IdentityType
+        fields=('tag','title','individual')
