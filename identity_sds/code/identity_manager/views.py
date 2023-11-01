@@ -78,11 +78,16 @@ def getID(request,id=None):
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
-def listByIDType(request,id_type):
+def listByIDType(request,id_type=None):
     full = request.GET.get("full",False)
+    if id_type is not None:
+        id_type_set = [id_type]
+    else:
+        raw_type_list = request.GET.getlist("type")
+        id_type_set = [urllib.parse.unquote(id_t) for id_t in raw_type_list]
+
     try:
-        id_type = IdentityType.objects.get(tag__exact=id_type)
-        qs = id_type.identities.all()
+        qs = IdentityEntry.objects.filter(type__tag__in=id_type_set)
         if full is not False:
             serializer = IdentitySerializerFull(qs,many=True)
         else:

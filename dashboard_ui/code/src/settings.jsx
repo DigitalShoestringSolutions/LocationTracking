@@ -1,18 +1,20 @@
 import React from "react";
-import { Button, ButtonGroup, Card, Col, Container, Form, ListGroup, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import { Button, ButtonGroup, Card, Col, Container, ListGroup, Row } from "react-bootstrap";
+import { useCache } from "./CacheContext";
+import { LocationSelector } from "./panels/filter_modal";
 
 
-export function SettingsPage({ location_list, config, shown_locations, setShownLocations, setPageSize, page_size }) {
+export function SettingsPage(props) {
   return (
-    <Container fluid className="vh-100 p-0 d-flex flex-column">
+    <Container fluid className="p-0 d-flex flex-column">
       <Container fluid className="flex-grow-1 px-1 pt-2 px-sm-2">
         <Row className="m-0 mx-2 d-flex justify-content-center pt-2 pb-2">
           <Col sm={10} md={8}>
             <Card className='my-2'>
               <Card.Header><h4>Settings</h4></Card.Header>
               <Card.Body>
-                <LocationManager location_list={location_list} shown_locations={shown_locations} setShownLocations={setShownLocations} />
-                <PageSizeManager setPageSize={setPageSize} page_size={page_size} />
+                <LocationManager {...props} />
+                <ClearCache />
               </Card.Body>
             </Card>
           </Col>
@@ -22,26 +24,43 @@ export function SettingsPage({ location_list, config, shown_locations, setShownL
   )
 }
 
-function LocationManager({ location_list, shown_locations, setShownLocations }) {
+function LocationManager({ location_list, config, location_filter, saveLocationFilter, shown_locations, saveShownLocations }) {
   let [available, setAvailable] = React.useState([])
-  let [shown, setShown] = React.useState([])
+  let [new_shown, setNewShown] = React.useState([])
   let [selected, setSelected] = React.useState(null)
   let [select_type, setSelectType] = React.useState(null)
   let [changed, setChanged] = React.useState(false)
 
   React.useEffect(() => {
-    setAvailable(location_list.filter((el) => !shown_locations.includes(el.id)))
-    setShown(shown_locations.map(elem_id => (location_list.find(elem => elem.id === elem_id))))
-  }, [location_list, shown_locations])
+    // let tmp_shown = shown_locations ? location_list.filter(elem => shown_locations.indexOf(elem.id) > -1) : []
+    let tmp_shown = shown_locations
+      ? shown_locations.reduce((acc, elem) => {
+        let res = location_list.find(item => item.id === elem)
+        if (res)
+          acc.push(res)
+        return acc
+      }, [])
+      : []
+    setNewShown(tmp_shown)
+    setAvailable(location_list.filter(elem => tmp_shown.indexOf(elem) === -1))
+  }, [location_list, location_filter, shown_locations])
 
   const doSave = () => {
-    setShownLocations(shown.map(elem => elem.id))
+    saveShownLocations(new_shown.map(elem => elem.id))
     setChanged(false)
   }
 
   return <>
     <Row>
-      <h4>Shown Locations<Button className="float-end" disabled={!changed} onClick={doSave}>Save</Button></h4>
+      <h4>Shown Locations
+        <Button className="ms-1 float-end" variant="warning" onClick={() => {
+          saveLocationFilter(config.locations.defaults.reduce((obj, elem) => { obj[elem] = true; return obj }, {}));
+          saveShownLocations(undefined)
+          }}>Reset</Button>
+        <Button className="float-end" disabled={!changed} onClick={doSave}>Save</Button></h4>
+    </Row>
+    <Row>
+      <LocationSelector config={config} state={location_filter} setState={(filter) => {setChanged(true);saveLocationFilter(filter)}} />
     </Row>
     <Row>
       <Col>
@@ -62,7 +81,7 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
             disabled={select_type !== "shown"}
             onClick={() => {
               setChanged(true)
-              setShown(prev => {
+              setNewShown(prev => {
                 let tmp = [...prev]
                 let index = prev.findIndex(elem => elem.id === selected)
                 if (index !== -1)
@@ -71,7 +90,6 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
               })
               setAvailable(prev => {
                 let entry = location_list.find(elem => elem.id === selected)
-                console.log(entry)
                 return [entry, ...prev]
               })
               setSelectType("available")
@@ -89,9 +107,8 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
                   tmp.splice(index, 1);
                 return tmp
               })
-              setShown(prev => {
+              setNewShown(prev => {
                 let entry = location_list.find(elem => elem.id === selected)
-                console.log(entry)
                 return [entry, ...prev]
               })
               setSelectType("shown")
@@ -102,7 +119,7 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
             disabled={select_type !== "shown"}
             onClick={() => {
               setChanged(true)
-              setShown(prev => {
+              setNewShown(prev => {
                 let tmp = [...prev]
                 let index = prev.findIndex(elem => elem.id === selected)
                 let entry = prev[index]
@@ -118,7 +135,7 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
             disabled={select_type !== "shown"}
             onClick={() => {
               setChanged(true)
-              setShown(prev => {
+              setNewShown(prev => {
                 let tmp = [...prev]
                 let index = prev.findIndex(elem => elem.id === selected)
                 let entry = prev[index]
@@ -132,7 +149,7 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
       </Col>
       <Col>
         <ListGroup>
-          {shown.map(elem => (
+          {new_shown.map(elem => (
             <ListGroup.Item
               key={elem.id}
               onClick={() => { setSelected(elem.id); setSelectType("shown") }}
@@ -145,31 +162,10 @@ function LocationManager({ location_list, shown_locations, setShownLocations }) 
   </>
 }
 
-function PageSizeManager({ page_size, setPageSize }) {
-  let [changed, setChanged] = React.useState(false)
-  let [n, setN] = React.useState(page_size)
-
-  React.useEffect(() => {
-    setN(page_size)
-  }, [page_size])
-
-  const doSave = () => {
-    setPageSize(n)
-    setChanged(false)
-  }
-
-  let values = [5, 10, 15, 25, 50]
-
-  return <>
-    <Row>
-      <h4>Table Height<Button className="float-end" disabled={!changed} onClick={doSave}>Save</Button></h4>
-    </Row>
-    <Row className="px-2">
-      <Form.Select value={n} onChange={(event) => {setN(Number(event.target.value));setChanged(true)}}>
-        {values.map(val => (
-          <option key={val} value={val}>{val}</option>
-        ))}
-      </Form.Select>
-    </Row>
-  </>
+function ClearCache() {
+  let { clear_cache, get_size } = useCache()
+  return <Row className="py-2">
+    <h4>Item Name Cache <Button className="float-end" variant="warning" disabled={get_size() === 0} onClick={() => clear_cache()}>Clear</Button></h4>
+    <div>Size: {get_size()}</div>
+  </Row>
 }

@@ -46,7 +46,7 @@ class StateModel:
             quantity = raw_msg.get('quantity',None)
 
             #log event
-            event = Event.objects.create(item_id=item_id,from_location_link=loc_link_from,to_location_link=loc_link_to,quantity=quantity,timestamp=timestamp)
+            event = Event(item_id=item_id,from_location_link=loc_link_from,to_location_link=loc_link_to,quantity=quantity,timestamp=timestamp)
             
             if loc_link_from == loc_link_to:
                 return
@@ -58,6 +58,8 @@ class StateModel:
             else:
                 output = update_individual(event)
             
+            event.save()
+
             #send update
             for msg in output:
                 self.pushsocket.send_multipart([msg["topic"].encode(),json.dumps(msg["payload"]).encode()])
@@ -124,6 +126,8 @@ def update_individual(event):
     with transaction.atomic():
         try:
             prevState = State.objects.get(item_id__exact=event.item_id,end__isnull=True)
+
+            event.from_location_link = prevState.location_link
             
             if prevState.location_link == event.to_location_link:
                 return []
