@@ -18,14 +18,20 @@ class IdentityTypeAdmin(admin.ModelAdmin):
     fields = ['auto_id','tag','title','individual']
     readonly_fields = ('auto_id',)
 
+class IdentifierInline(admin.TabularInline):
+    model = models.Identifier
+    extra = 0
+
 @admin.register(models.IdentityEntry)
 class IdentityEntryAdmin(admin.ModelAdmin):
-    list_display = ['name','type','parent']
+    list_display = ['name','type','parent','identifiers_summary']
     fields = ['auto_id','name','description','type','parent']
+    inlines = [IdentifierInline]
     readonly_fields = ('auto_id',)
     list_filter = ['type']
-    # ordering = ['auto_id']
-    # actions = [move_complete]
+
+    def identifiers_summary(self,obj):
+        return ', '.join(str(idfr) for idfr in obj.identifiers.all())
 
 @admin.register(models.IdentifierType)
 class IdentifierTypeAdmin(admin.ModelAdmin):
@@ -46,3 +52,9 @@ class IdentifierAdmin(admin.ModelAdmin):
     fields = ['auto_id','label','identifier_type','id_type','pattern','defaults']
     readonly_fields = ('auto_id',)
     list_filter = ['identifier_type','id_type']
+
+# @admin.register(models.ExtraField)
+# class ExtraFieldAdmin(admin.ModelAdmin):
+#     list_display = ['for_type','key']
+#     fields = ['auto_id','for_type','key']
+#     readonly_fields = ('auto_id',)

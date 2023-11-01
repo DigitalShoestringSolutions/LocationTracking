@@ -1,4 +1,5 @@
 **/data/*
+**/changes/*
 **/lstart.sh
 **__pycache__
 !**/.gitkeep

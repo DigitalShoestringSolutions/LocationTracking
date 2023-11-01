@@ -1,34 +1,11 @@
-.carousel-inner>.carousel-item {
-  max-height: 400px;
-}
-
-.carousel-item>img {
-  max-height: 250px;
-}
-
-.carousel-caption {
-  position: relative;
-}
-
-.bottom_bar {
+.sidebar{
   position: fixed;
-  left: 50%;
-  bottom: 5px;
-  translate: -50%;
+  height: 100vh;
+  width: 3.5rem;
+  left:0px;
 }
 
-.pdf-page>* {
-  height: 100% !important;
-  width: auto ! important;
-  margin: auto;
-}
-
-.pdf-page {
-  height: 100%;
-  width: auto;
-}
-
-.pdf-doc {
-  height: 100%;
-  width: auto;
+.mainpage{
+  padding: 0;
+  padding-left: 3.5rem;
 }
