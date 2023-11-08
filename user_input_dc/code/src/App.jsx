@@ -28,7 +28,7 @@ function App() {
   React.useEffect(() => {
     let do_load = async () => {
       setPending(true)
-      APIBackend.api_get('http://' + document.location.host + '/config/config.json').then((response) => {
+      APIBackend.api_get('http://' + window.location.host + '/config/config.json').then((response) => {
         if (response.status === 200) {
           const raw_conf = response.payload;
           console.log("config", raw_conf)
@@ -232,7 +232,7 @@ function Dashboard({ config = {}, location_list }) {
       setItemPending(true);
       setItemReload(false);
 
-      let url = (config.api.host ? config.api.host : window.location.host) + (config.api.port ? ":" + config.api.port : "")
+      let url = (config.api.host ? config.api.host : window.location.hostname) + (config.api.port ? ":" + config.api.port : "")
       APIBackend.api_get('http://' + url + '/id/get/' + config.api.type + '/' + encodeURIComponent(barcode) + "?full").then((response) => {
         if (response.status === 200) {
           console.log("id", response.payload)
