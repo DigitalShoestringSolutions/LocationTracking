@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'shoestring_wrapper',
     'state_model',
     'adminsortable', 
+    'default_admin'
 ]
 
 MIDDLEWARE = [

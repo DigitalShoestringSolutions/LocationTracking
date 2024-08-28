@@ -65,10 +65,13 @@ class Identifier(models.Model):
     def __str__(self):
         return f"{self.type.title}:{self.value}"
 
+def default_pattern():
+    return {"description":""}
+
 class IdentifierPattern(models.Model):
     auto_id = models.BigAutoField(primary_key=True)
-    pattern = models.CharField(max_length=50, help_text="Regex pattern to extract details from barcode")
-    defaults = models.JSONField(help_text="default/constant identity values - used if not extracted by pattern")
+    pattern = models.CharField(max_length=50, help_text="Regex pattern to extract details from barcode", default="(?P<name>.*)")
+    defaults = models.JSONField(help_text="default/constant identity values - used if not extracted by pattern",default=default_pattern)
     label = models.CharField(max_length=50, help_text="label describing what this pattern is for")
     identifier_type = models.ForeignKey(IdentifierType, on_delete=models.CASCADE, related_name="patterns")
     id_type = models.ForeignKey(IdentityType, on_delete=models.CASCADE, related_name="patterns")

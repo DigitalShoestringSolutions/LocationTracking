@@ -31,6 +31,7 @@ services:
         restart: unless-stopped
         env_file:
             - django_secret_key 
+            - default_password
     identity-sds:
         extends:
             file: identity_sds/app.yml
@@ -46,6 +47,7 @@ services:
         restart: unless-stopped
         env_file:
             - django_secret_key 
+            - default_password
 
     mqtt_broker:
         extends:
