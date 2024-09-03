@@ -13,7 +13,7 @@ import dayjs from 'dayjs'
 import { load_current_state } from '../fetch_data'
 import { FilterModal } from '../panels/filter_modal'
 
-export function OverviewPage({ config = {}, location_list, shown_locations, item_filter,saveItemFilter }) {
+export function OverviewPage({ config = {}, location_list, shown_locations, item_filter, saveItemFilter }) {
   console.log(item_filter)
 
   let dispatch = useMQTTDispatch()
@@ -105,7 +105,16 @@ function ItemTable({ filter, state, location_list, shown_locations = [], setting
       <thead>
         <tr>
           {shown_locations.map(loc_id => (
-            <th key={loc_id} colSpan={2}><h3><NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={"/loc/" + loc_id}>{location_list.find(elem => elem.id === loc_id).name}</NavLink></h3></th>
+            <th key={loc_id} colSpan={2}>
+              <h3>
+                <NavLink
+                  className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover"
+                  to={"/loc/" + loc_id}
+                >
+                  {location_list.find(elem => elem.id === loc_id)?.name}
+                </NavLink>
+              </h3>
+            </th>
           ))}
         </tr>
       </thead>
@@ -136,11 +145,11 @@ function DisplayEntry({ entry, settings }) {
   if (entry === undefined)
     return "";
   if (entry?.quantity)
-    return <div style={{width:"max-content"}}><i className="bi bi-boxes pe-1" />{entry.quantity}</div>
+    return <div style={{ width: "max-content" }}><i className="bi bi-boxes pe-1" />{entry.quantity}</div>
   else {
     if (settings?.relative_time)
-      return <div style={{width:"max-content"}}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</div>
+      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</div>
     else
-      return <div style={{width:"max-content"}}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:MM")}</div>
+      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:MM")}</div>
   }
 }

@@ -5,17 +5,9 @@ class StateConfig(AppConfig):
     name = 'state'
     
     def ready(self):
-        post_migrate.connect(create_default_admin,sender=self)
         # post_migrate.connect(create_default_locations,sender=self)
+        pass
 
-def create_default_admin(sender, **kwargs):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-    try:
-        User.objects.create_superuser('admin','','admin')
-        print("Created default admin user")
-    except:
-        print("default admin not created - may already exist")
 
 
 # def create_default_locations(sender, **kwargs):

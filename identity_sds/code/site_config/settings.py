@@ -31,16 +31,18 @@ CORS_ALLOW_ALL_ORIGINS = True
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'corsheaders',
-    'whitenoise',
-    'rest_framework',
-    'identity_manager',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "corsheaders",
+    "whitenoise",
+    "rest_framework",
+    "identity_manager",
+    "default_admin",
+    "job_tracking_defaults",
 ]
 
 MIDDLEWARE = [
@@ -143,10 +145,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-#overwrite
+# overwrite
 try:
     from config.settings import * #noqa
 except ImportError:
     pass
-
-
