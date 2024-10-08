@@ -13,6 +13,30 @@ import dayjs from 'dayjs'
 import { load_current_state } from '../fetch_data'
 import { FilterModal } from '../panels/filter_modal'
 
+const ITEM_ORDERS = {
+  alpha: "alpha",
+  quantity: "quantity",
+  time: "time"
+}
+
+const ITEM_TOOLTIPS = {
+  alpha: "alphabetical",
+  quantity: "quantity",
+  time: "recent first"
+}
+
+const ITEM_ORDERS_NEXT = {
+  alpha: "quantity",
+  quantity: "time",
+  time: "alpha"
+}
+
+const ITEM_ICONS = {
+  alpha: "sort-alpha-down",
+  quantity: "sort-numeric-down-alt",
+  time: "stopwatch"
+}
+
 export function OverviewPage({ config = {}, location_list, shown_locations, item_filter, saveItemFilter }) {
   console.log(item_filter)
 
@@ -26,6 +50,7 @@ export function OverviewPage({ config = {}, location_list, shown_locations, item
 
   const [page_size, setPageSize] = React.useState(10)
   const [relative_time, setRelativeTime] = React.useState(true)
+  const [order_item, setOrderItem] = React.useState(ITEM_ORDERS.quantity)
   const [show_filter_modal, setShowFilter] = React.useState(false)
 
   let load_current_state_callback = React.useCallback(load_current_state, [])
@@ -54,8 +79,11 @@ export function OverviewPage({ config = {}, location_list, shown_locations, item
               <OverlayTrigger placement="bottom" overlay={<Tooltip>Filter shown items</Tooltip>}>
                 <Button variant="outline-secondary" className='bi bi-funnel-fill' onClick={() => setShowFilter(true)}></Button>
               </OverlayTrigger>
-              <OverlayTrigger placement="bottom" overlay={<Tooltip>Toggle time display</Tooltip>}>
+              <OverlayTrigger placement="bottom" overlay={<Tooltip>Time display: {relative_time ? "relative" : "timestamp"}</Tooltip>}>
                 <Button variant="outline-secondary" className={'bi bi-' + (relative_time ? "clock-history" : "calendar3")} onClick={() => setRelativeTime(prev => !prev)} />
+              </OverlayTrigger>
+              <OverlayTrigger placement="bottom" overlay={<Tooltip>Item order: {ITEM_TOOLTIPS[order_item]}</Tooltip>}>
+                <Button variant="outline-secondary" className={'bi bi-' + (ITEM_ICONS[order_item] ?? "question-lg")} onClick={() => setOrderItem(prev => ITEM_ORDERS_NEXT[prev])} />
               </OverlayTrigger>
               <DropdownButton variant="outline-secondary" title={"Shown: " + page_size} size="sm" value={page_size}>
                 <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
@@ -67,7 +95,7 @@ export function OverviewPage({ config = {}, location_list, shown_locations, item
             </InputGroup>
           </Card.Header>
           <Card.Body className='p-0'>
-            <ItemTable filter={item_filter} state={items_state} shown_locations={shown_locations} location_list={location_list} config={config} settings={{ page_size: page_size, relative_time: relative_time }} />
+            <ItemTable filter={item_filter} state={items_state} shown_locations={shown_locations} location_list={location_list} config={config} settings={{ page_size: page_size, relative_time: relative_time, order_item: order_item }} />
           </Card.Body>
         </Card>
       </Container>
@@ -91,7 +119,17 @@ function ItemTable({ filter, state, location_list, shown_locations = [], setting
     return false
   })
 
-  let grouped_state = groupBy(shown_state, "location_link")
+  let sort_func = {
+    [ITEM_ORDERS.alpha]: (a, b) => (cache_fetch(b.item_id)?.name > cache_fetch(a.item_id)?.name ? -1 : 1),
+    [ITEM_ORDERS.quantity]: (a, b) => (b.quantity - a.quantity),
+    [ITEM_ORDERS.time]: (a, b) => (b.start - a.start),
+  }[settings.order_item] ?? undefined
+  let sorted_state = shown_state
+
+  if (sort_func)
+    sorted_state = shown_state.sort(sort_func)
+
+  let grouped_state = groupBy(sorted_state, "location_link")
 
   let page_size = settings.page_size
   page_size = Number(page_size)
