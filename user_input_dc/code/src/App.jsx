@@ -359,7 +359,7 @@ function BarcodeEntry({ submit, barcode, setBarcode, barcodeRef }) {
       ref={barcodeRef}
       placeholder="Barcode"
       value={barcode}
-      onChange={(event) => setBarcode(event.target.value)}
+      onChange={(event) => setBarcode(event.target.value.trim())}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
           event.preventDefault();
