@@ -1,9 +1,9 @@
 export async function custom_new_message_action(dispatch, message) {
   // console.log(message)
   if (message && message.topic.match("location_state/update")) {
-    dispatch({ type: 'ITEM_UPDATE', updated_entry: message.payload })
+    dispatch({ type: 'ITEM_UPDATE', updated_entry: { start: message.payload.timestamp, ...message.payload } })
   } else if (message && message.topic.match("location_state/entered")) {
-    dispatch({ type: 'ITEM_ENTERED', added_entry: message.payload })
+    dispatch({ type: 'ITEM_ENTERED', added_entry: { start: message.payload.timestamp, ...message.payload } })
   } else if (message && message.topic.match("location_state/exited")) {
     dispatch({ type: 'ITEM_EXITED', removed_entry: message.payload })
   }
