@@ -1,0 +1,48 @@
+[input.scanner]
+serial="<Serial Number>"
+connection_point=["*"]
+platform = "*"
+
+[[variable]]
+    name="location"
+    type="static"
+    value="<Location Name Here>"
+
+[[variable]]
+    name="barcode"
+    type="single"
+    pattern='\s*(.*)\s*'
+
+[processing]
+    directory="plugins"
+[processing.process.get_id]
+    apply_to = "barcode"
+    module="id_for_barcode"
+    output_as=["id"]
+    extra_args={endpoint = "locations-sds.docker.local", type="barcode"}
+
+[[output]]
+    name = "scan event"   # only used in logging
+    topic = "location_update/{{location}}"
+    triggers = ["id"]
+    trigger_policy="all"
+    #payload.<key>="<variable>"
+    payload.item_id="id"
+    payload.loc_link_to="location"
+    payload.timestamp="timestamp"
+
+
+[service_layer.mqtt]
+    broker="mqtt.docker.local"
+    port=1883
+    base_topic_template = ""
+
+    #reconnection characteristics
+    # start: timeout = initial,
+    # if timeout < limit then
+    #   timeout = timeout*backoff
+    # else
+    #   timeout = limit
+    reconnect.initial = 5 # seconds
+    reconnect.backoff = 2 # multiplier
+    reconnect.limit = 60 # seconds

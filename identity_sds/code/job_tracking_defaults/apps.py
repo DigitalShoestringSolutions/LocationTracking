@@ -29,9 +29,10 @@ def create_defaults(sender, **kwargs):
 
     if location_idtype_created:
         print("Location ID Type created - adding defaults for New and Complete")
-        IdentityEntry.objects.create(name="New", type=location_idtype)
-        IdentityEntry.objects.create(name="Complete", type=location_idtype)
-
+        IdentityEntry.objects.create(auto_id=1, name="New", type=location_idtype)
+        IdentityEntry.objects.create(auto_id=2, name="Location 1", type=location_idtype)
+        IdentityEntry.objects.create(auto_id=3, name="Location 2", type=location_idtype)
+        IdentityEntry.objects.create(auto_id=4, name="Complete", type=location_idtype)
 
     if product_type_created:
         IdentifierPattern.objects.get_or_create(
