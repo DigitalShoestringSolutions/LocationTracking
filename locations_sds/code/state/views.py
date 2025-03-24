@@ -68,7 +68,7 @@ def historyAll(request):
 
     if t_start:
         start_dt = dateutil.parser.isoparse(t_start)
-        q = q&Q(end__gte=start_dt)|Q(end__isnull=True)
+        q = q&(Q(end__gte=start_dt)|Q(end__isnull=True))
 
     if t_end:
         end_dt = dateutil.parser.isoparse(t_end)
@@ -89,7 +89,7 @@ def historyFor(request,item_id):
 
     if t_start:
         start_dt = dateutil.parser.isoparse(t_start)
-        q = q&Q(end__gte=start_dt)|Q(end__isnull=True)
+        q = q&(Q(end__gte=start_dt)|Q(end__isnull=True))
 
     if t_end:
         end_dt = dateutil.parser.isoparse(t_end)
@@ -111,7 +111,7 @@ def historyAt(request,location_link):
 
     if t_start:
         start_dt = dateutil.parser.isoparse(t_start)
-        q = q&Q(end__gte=start_dt)|Q(end__isnull=True)
+        q = q&(Q(end__gte=start_dt)|Q(end__isnull=True))
 
     if t_end:
         end_dt = dateutil.parser.isoparse(t_end)
