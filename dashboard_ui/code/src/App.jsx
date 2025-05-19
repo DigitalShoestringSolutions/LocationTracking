@@ -15,9 +15,9 @@ import { OverviewPage } from './pages/overview';
 import { LocationPage } from './pages/location';
 import { ItemPage } from './pages/item';
 
-import * as dayjs from 'dayjs'
-import * as duration from 'dayjs/plugin/duration';
-import * as relativeTime from 'dayjs/plugin/relativeTime';
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { CacheProvider } from './CacheContext';
 import { fetch_new, load_config, load_type_list } from './fetch_data';
 dayjs.extend(duration);

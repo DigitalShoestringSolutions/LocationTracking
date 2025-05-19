@@ -6,7 +6,7 @@ import { Button, Col, Dropdown, DropdownButton, Form, InputGroup, Row, Spinner, 
 import { PaginateWidget, groupBy, paginate, pivot } from '../table_utils';
 import { NavLink, useParams } from 'react-router-dom';
 
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import { useCache } from '../CacheContext'
 import { load_current_state, load_location_transactions } from '../fetch_data';
 
