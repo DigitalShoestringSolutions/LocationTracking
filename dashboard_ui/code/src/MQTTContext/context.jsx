@@ -1,7 +1,7 @@
 import React from "react";
 import Paho from 'paho-mqtt';
 import uuid from 'uuid4';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 import { default_new_message_action } from "./default_actions";
 import { DefaultReducer } from "./default_reducer";
