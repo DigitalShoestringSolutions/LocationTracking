@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Card, Container, Dropdown, DropdownButton, Form, InputGroup, Spinner, Table } from "react-bootstrap";
 import { NavLink, useParams } from "react-router-dom";
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import { useMQTTDispatch, useMQTTState } from "../MQTTContext";
 import { PaginateWidget, groupBy, paginate } from "../table_utils";
 
