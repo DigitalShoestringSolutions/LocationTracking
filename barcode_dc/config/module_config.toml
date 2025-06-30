@@ -11,7 +11,8 @@ platform = "*"
 [[variable]]
     name="barcode"
     type="single"
-    pattern='\s*(.*)\s*'
+    # Horribly complicated regex that will match any barcode but exclude leading and trailing whitespace while still allowing whitespace in the middle
+    pattern='\s*(.*(?<=[\S]))\s*'
 
 [processing]
     directory="plugins"
