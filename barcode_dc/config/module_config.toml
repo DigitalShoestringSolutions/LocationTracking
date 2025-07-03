@@ -1,7 +1,7 @@
 [input.scanner]
-serial="<Serial Number>"
-connection_point=["*"]
-platform = "*"
+    serial="<Serial Number>"
+    connection_point=["*"]
+    platform = "*"
 
 [[variable]]
     name="location"
