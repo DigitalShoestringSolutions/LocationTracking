@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import State, Event
+from .models import State, TransferEvent
 
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,7 +14,7 @@ class StateSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Event
+        model=TransferEvent
         fields = ('event_id','item_id','from_location_link','to_location_link',"timestamp","quantity")
 
 

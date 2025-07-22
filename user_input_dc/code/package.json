@@ -5,8 +5,6 @@
   "dependencies": {
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.5",
-    "chart.js": "^4.4.0",
-    "chartjs-adapter-dayjs-4": "^1.0.4",
     "dayjs": "^1.11.10",
     "paho-mqtt": "^1.1.0",
     "react": "^18.2.0",
@@ -26,7 +24,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
-    "vite": "^6.3.5"
+    "vite": "^7.0.5"
   },
   "scripts": {
     "dev": "vite",

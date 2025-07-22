@@ -1,6 +1,6 @@
 from django.db import models
 
-class Event(models.Model):
+class TransferEvent(models.Model):
     event_id = models.BigAutoField(primary_key=True)
     item_id = models.CharField(max_length=32)
     from_location_link = models.CharField(max_length=32,blank=True,null=True)
@@ -12,8 +12,27 @@ class Event(models.Model):
         return self.item_id
 
     class Meta:
-        verbose_name_plural = 'Event Records'
- 
+        verbose_name_plural = 'Transfer Event Records'
+
+
+class ProductionEvent(models.Model):
+    event_id = models.BigAutoField(primary_key=True)
+    item_id = models.CharField(max_length=32)
+    location_link = models.CharField(max_length=32)
+    quantity = models.IntegerField(blank=True, null=True)
+    timestamp = models.DateTimeField()
+
+    class Meta:
+        verbose_name_plural = "Production Event Records"
+
+
+class ProductionEventInput(models.Model):
+    item_id = models.CharField(max_length=32)
+    location_link = models.CharField(max_length=32)
+    quantity = models.IntegerField(blank=True, null=True)
+    production_event = models.ForeignKey(ProductionEvent,on_delete=models.CASCADE,related_name="inputs")
+
+
 class State(models.Model):
     record_id = models.BigAutoField(primary_key=True)
     item_id = models.CharField(max_length=32)
@@ -32,4 +51,3 @@ class State(models.Model):
             models.Index(fields=['location_link',"item_id","end"], name="loc_link_idx"),
             models.Index(fields=['-start','-end'], name="timestamp_idx"),
         ]
-    

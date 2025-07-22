@@ -10,7 +10,7 @@ from rest_framework_csv.renderers import CSVRenderer
 import datetime
 import dateutil.parser
 
-from .models import State, Event
+from .models import State, TransferEvent
 from .serializers import StateSerializer, EventSerializer
 
 @api_view(('GET',))
@@ -139,7 +139,7 @@ def getAllEvents(request):
         end_dt = dateutil.parser.isoparse(t_end)
         q = q&Q(timestamp__lte=end_dt)
         
-    qs = Event.objects.filter(q).order_by('-timestamp')
+    qs = TransferEvent.objects.filter(q).order_by('-timestamp')
     serializer = EventSerializer(qs,many=True)
     return Response(serializer.data)
 
@@ -161,7 +161,7 @@ def eventsForItem(request,item_id):
         end_dt = dateutil.parser.isoparse(t_end)
         q = q&Q(timestamp__lte=end_dt)
         
-    qs = Event.objects.filter(q).order_by('-timestamp')
+    qs = TransferEvent.objects.filter(q).order_by('-timestamp')
     serializer = EventSerializer(qs,many=True)
     return Response(serializer.data)
 
@@ -183,7 +183,7 @@ def eventsToLocLink(request,location_link):
         end_dt = dateutil.parser.isoparse(t_end)
         q = q&Q(timestamp__lte=end_dt)
         
-    qs = Event.objects.filter(q).order_by('-timestamp')
+    qs = TransferEvent.objects.filter(q).order_by('-timestamp')
     serializer = EventSerializer(qs,many=True)
     return Response(serializer.data)
 
@@ -205,7 +205,7 @@ def eventsFromLocLink(request,location_link):
         end_dt = dateutil.parser.isoparse(t_end)
         q = q&Q(timestamp__lte=end_dt)
         
-    qs = Event.objects.filter(q).order_by('-timestamp')
+    qs = TransferEvent.objects.filter(q).order_by('-timestamp')
     serializer = EventSerializer(qs,many=True)
     return Response(serializer.data)
 
@@ -227,7 +227,7 @@ def eventsAtLocLink(request,location_link):
         end_dt = dateutil.parser.isoparse(t_end)
         q = q&Q(timestamp__lte=end_dt)
         
-    qs = Event.objects.filter(q).order_by('-timestamp')
+    qs = TransferEvent.objects.filter(q).order_by('-timestamp')
     serializer = EventSerializer(qs,many=True)
     return Response(serializer.data)
 
