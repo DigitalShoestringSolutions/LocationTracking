@@ -12,7 +12,7 @@ services:
                 - ./config/:/app/config
                 - /etc/localtime:/etc/localtime:ro
             ports:
-                - "8001:80"
+                - "8010:80"
             restart: unless-stopped
 
         dev:
