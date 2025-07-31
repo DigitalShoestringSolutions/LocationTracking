@@ -28,8 +28,8 @@
     triggers = ["id"]
     trigger_policy="all"
     #payload.<key>="<variable>"
-    payload.item_id="id"
-    payload.loc_link_to="location"
+    payload.item="id"
+    payload.to="location"
     payload.timestamp="timestamp"
 
 
