@@ -20,7 +20,7 @@
     apply_to = "barcode"
     module="id_for_barcode"
     output_as=["id"]
-    extra_args={endpoint = "locations-sds.docker.local", type="barcode"}
+    extra_args={endpoint = "identity-sds.docker.local", type="barcode"}
 
 [[output]]
     name = "scan event"   # only used in logging
