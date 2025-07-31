@@ -197,7 +197,7 @@ function TransactionPanel({ config, current_location_id, settings }) {
 
   return <Card className='my-2'>
     <Card.Header className='d-flex flex-row justify-content-between'>
-      <h3 className='flex-shrink-0 flex-grow-1'>Transations</h3>
+      <h3 className='flex-shrink-0 flex-grow-1'>Transactions</h3>
       <InputGroup className="my-1 d-flex justify-content-center flex-grow-0 flex-shrink-0" style={{ width: "max-content" }}>
         <Button variant="outline-secondary" onClick={() => setShowDay(show_day.subtract(1, period))}>
           {"<"}
