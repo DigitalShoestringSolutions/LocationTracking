@@ -4,6 +4,7 @@ import APIBackend from './RestAPI'
 class APIException extends Error {
     constructor(message, code = code, payload = undefined, name = "PayloadError") {
         super(message);
+        this.message = message
         this.name = name;
         this.payload = payload
         this.code = code
@@ -40,9 +41,22 @@ export function useBarcodeDetails(barcode) {
     return useQuery(
         {
             queryKey: ['item_details', { barcode: barcode }],
-            queryFn: async () => APIBackend.api_get('http://' + get_url(config) + '/id/get/' + config.api.type + '/' + encodeURIComponent(barcode) + "?full"),
+            queryFn: async () => APIBackend.api_get('http://' + get_url(config) + '/id/get/' + config.api.type + '/' + encodeURIComponent(barcode) + "?full").then(
+                result => {
+                    if (result.status === 404) {
+                        throw new APIException("Not Found",result.status,result.payload)
+                    } else {
+                        return result
+                    }
+                }),
             select: (data) => (data.payload),
+            retry: (failureCount, error) => {
+                if (error instanceof APIException)
+                    return false
+                return failureCount<3
+            },
             enabled: !!barcode
         }
     )
 }
+

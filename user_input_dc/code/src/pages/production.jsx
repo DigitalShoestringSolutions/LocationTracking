@@ -30,7 +30,6 @@ export function ProductionOperation() {
     let [output_barcode, setOutputBarcode] = React.useState(undefined)
 
     let [input_barcode_buffer, setInputBarcodeBuffer] = React.useState("")
-    let [item_error, setItemError] = React.useState(undefined)
 
     let [output_quantity, setOutputQuantity] = React.useState("")
     let [output_to, setOutputTo] = React.useState("")
@@ -40,7 +39,7 @@ export function ProductionOperation() {
 
     let toast_dispatch = useToastDispatch()
 
-    let { data: current_item, isLoading: barcode_loading, isError: barode_error } = useBarcodeDetails(output_barcode)
+    let { data: current_item, isLoading: barcode_loading, error: item_error } = useBarcodeDetails(output_barcode)
 
     const handle_barcode_submit = () => {
         console.log("handle_barcode_submit: " + output_barcode_buffer)
@@ -48,13 +47,14 @@ export function ProductionOperation() {
     }
 
     const handle_add_input = () => {
-        setInputs(prev_value => ({ ...prev_value, [input_barcode_buffer]: { location: undefined } }))
+        if (input_barcode_buffer != "")
+            setInputs(prev_value => ({ ...prev_value, [input_barcode_buffer]: { location: undefined } }))
         setInputBarcodeBuffer("")
     }
 
     const handle_remove_input = (barcode) => {
         setInputs(prev_value => {
-            let new_value = {...prev_value};
+            let new_value = { ...prev_value };
             delete new_value[barcode]
             return new_value
         })
@@ -114,13 +114,13 @@ export function ProductionOperation() {
 
         let inputs_payload = Object.keys(inputs).map(input_key => {
             let input = inputs[input_key]
-            let input_payload =  {
+            let input_payload = {
                 item: input.item.id
             }
-            if (input.location){
+            if (input.location) {
                 input_payload.loc = input.location
             }
-            if (!input.item.individual){
+            if (!input.item.individual) {
                 input_payload.quantity = input.quantity
             }
 
@@ -149,7 +149,7 @@ export function ProductionOperation() {
 
     let inputs_valid = Object.keys(inputs).reduce((acc, key) => (acc && inputs[key]?.item?.individual || !!inputs[key]?.quantity), true)
     let can_submit = current_item != null && (current_item?.individual || !!output_quantity) && !!output_to && inputs_valid
-
+    console.log(item_error?.message)
     return (
         <Container fluid className="flex-grow-1 px-1 pt-2 px-sm-2">
             <Card className='my-2'>
@@ -158,7 +158,7 @@ export function ProductionOperation() {
                     <Card.Title>Output</Card.Title>
                     <Card.Body>
                         <BarcodeEntry barcode={output_barcode_buffer} setBarcode={setOutputBarcodeBuffer} submit={handle_barcode_submit} barcodeRef={barcodeRef} />
-                        <DisplayItem item={current_item} pending={barcode_loading} error={item_error} />
+                        <DisplayItem item={current_item} pending={barcode_loading} error={item_error?.message} />
                         <SelectLocation
                             fixed_location={current_location}
                             location_value={output_to}
@@ -185,7 +185,7 @@ export function ProductionOperation() {
                                     setLocation={(value) => setInputLocation(barcode, value)}
                                     quantity={inputs[barcode]?.quantity}
                                     setQuantity={(value) => setInputQuantity(barcode, value)}
-                                    setItem={(value) => setInputItem(barcode,value)}
+                                    setItem={(value) => setInputItem(barcode, value)}
                                     removeInput={() => handle_remove_input(barcode)}
                                 />)}
                         </ListGroup>
@@ -205,16 +205,21 @@ export function ProductionOperation() {
 }
 
 function InputEntry({ barcode, location, setLocation, quantity, setQuantity, removeInput, setItem }) {
-    let { data: item, isLoading } = useBarcodeDetails(barcode)
-
+    let { data: item, isLoading, error, isError } = useBarcodeDetails(barcode)
     React.useEffect(() => {
         setItem(item)
-    },[item])
+    }, [item])
 
     return <ListGroup.Item>
-        <DisplayItem item={item ?? null} pending={isLoading} classes={item?.individual ? "" : "mb-3"} button_text="Remove" handleButtonClick={removeInput}/>
+        <DisplayItem
+            item={item ?? undefined}
+            pending={isLoading}
+            error={(error && error.name == "PayloadError") ? (error.message + " [barcode: "+barcode+"]") : undefined}
+            classes={item?.individual ? "" : "mb-3"}
+            button_text="Remove"
+            handleButtonClick={removeInput} />
         <SelectLocation
-            show={!(item?.individual || isLoading)}
+            show={!(item?.individual || isLoading) && !isError}
             location_value={location}
             setLocation={setLocation}
             label='From'

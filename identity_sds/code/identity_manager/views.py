@@ -42,6 +42,8 @@ def identify(request,identifier_type,identifier):
                 identity = IdentityEntry.objects.create(type=pattern_obj.id_type,**dataset)
                 Identifier.objects.create(type=idfier_type,value=identifier,target=identity)
                 print(f"{identifier_type}:{identifier}>Created:{identity.get_id()}")
+            else:
+                return Response(status=404)
 
     
     if full is not False:

@@ -25,9 +25,7 @@ export function BarcodeEntry({ submit, barcode, setBarcode, barcodeRef, button_t
 }
 
 export function DisplayItem({ item, pending = false, error, classes = "mb-3", button_text, handleButtonClick }) {
-    if (item === undefined) {
-        return ""
-    }
+
 
     let form_value = ""
     let form_disabled = false
@@ -42,11 +40,15 @@ export function DisplayItem({ item, pending = false, error, classes = "mb-3", bu
         form_value = item.name
         form_disabled = true
         text_value = <i className='bi bi-check2' />
+    } else if (item === undefined) {
+        return ""
     }
 
     let end_segement = <InputGroup.Text>{text_value}</InputGroup.Text>
-    if (form_disabled && button_text)
-        end_segement = <Button variant="outline-secondary" onClick={handleButtonClick}>{button_text}</Button>
+    if (form_disabled && button_text) {
+        let variant = error ? "danger" : "outline-secondary"
+        end_segement = <Button variant={variant} onClick={handleButtonClick}>{button_text}</Button>
+    }
 
     return <InputGroup className={classes}>
         <InputGroup.Text style={{ width: "7em" }}><i className={'bi me-1 ' + (item?.individual ? "bi-tag" : "bi-box")} />Item</InputGroup.Text>
