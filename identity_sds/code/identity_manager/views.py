@@ -34,6 +34,7 @@ def identify(request,identifier_type,identifier):
         identity = idfier.target
         print(f"{identifier_type}:{identifier}>Found:{identity.get_id()}")
     except Identifier.DoesNotExist:
+        has_match = False
         for pattern_obj in idfier_type.patterns.all():
             pattern = re.compile(pattern_obj.pattern)
             match = pattern.match(identifier)
@@ -42,10 +43,10 @@ def identify(request,identifier_type,identifier):
                 identity = IdentityEntry.objects.create(type=pattern_obj.id_type,**dataset)
                 Identifier.objects.create(type=idfier_type,value=identifier,target=identity)
                 print(f"{identifier_type}:{identifier}>Created:{identity.get_id()}")
-            else:
-                return Response(status=404)
+                has_match = True
+        if not has_match:
+            return Response(status=404)
 
-    
     if full is not False:
         serializer = IdentitySerializerFull(identity)
     else:
@@ -75,7 +76,6 @@ def getID(request,id=None):
     serializer = IdentitySerializerFull(identities,many=True)
 
     return Response(serializer.data)
-
 
 
 @api_view(('GET',))

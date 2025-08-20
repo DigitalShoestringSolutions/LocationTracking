@@ -30,7 +30,10 @@ class ProductionEventInput(models.Model):
     item_id = models.CharField(max_length=32)
     location_link = models.CharField(max_length=32)
     quantity = models.IntegerField(blank=True, null=True)
-    production_event = models.ForeignKey(ProductionEvent,on_delete=models.CASCADE,related_name="inputs")
+    production_event = models.ForeignKey(
+        ProductionEvent, on_delete=models.CASCADE, related_name="inputs"
+    )
+    timestamp = models.DateTimeField()
 
 
 class State(models.Model):

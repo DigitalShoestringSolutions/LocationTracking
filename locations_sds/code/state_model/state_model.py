@@ -86,7 +86,12 @@ class StateModel:
             print(prod_event_input_data)
             prod_event_inputs = [
                 ProductionEventInput(
-                    production_event=prod_event, **{"location_link":prod_event.location_link, **entry}
+                    production_event=prod_event,
+                    **{
+                        "location_link": prod_event.location_link,
+                        "timestamp": prod_event.timestamp,
+                        **entry,
+                    },
                 )
                 for entry in prod_event_input_data
             ]
@@ -115,11 +120,11 @@ class StateModel:
             print(e)
 
 
-def transfer_collection(event):
+def transfer_collection(event: TransferEvent):
     output_messages = []
     with transaction.atomic():
         to_update_msg = __increase_collection(
-            event.item_id, event.to_location_link, event.location, event.timestamp
+            event.item_id, event.to_location_link, event.quantity, event.timestamp
         )
         print(to_update_msg)
         output_messages.append(to_update_msg)
@@ -133,7 +138,7 @@ def transfer_collection(event):
     return output_messages
 
 
-def transfer_individual(event):
+def transfer_individual(event: TransferEvent):
     with transaction.atomic():
         prevState, _, output_messages = __transfer_individual(
             event.item_id,
@@ -178,7 +183,7 @@ def production_collection(event: ProductionEvent, inputs: list[ProductionEventIn
 def production_individual(event: ProductionEvent, inputs: list[ProductionEventInput]):
     all_output_messages = []
     with transaction.atomic():
-        
+
         _, produced_item, update_msgs = __transfer_individual(
             event.item_id, event.location_link, event.timestamp
         )

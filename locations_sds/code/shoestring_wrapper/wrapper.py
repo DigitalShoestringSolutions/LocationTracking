@@ -143,7 +143,7 @@ class AsyncMqttLoop:
 
 
 class Wrapper:
-    inst = None;
+    inst = None
 
     def __init__(self):
         self.addr_map = {
