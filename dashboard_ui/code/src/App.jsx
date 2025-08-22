@@ -6,7 +6,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import { custom_new_message_action } from './custom_mqtt';
 import { Button, Nav, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { ToastProvider } from './ToastContext'
-import { BrowserRouter, Routes, Route, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { SettingsPage } from './settings';
 import { OverviewPage } from './pages/overview';
 import { LocationPage } from './pages/location';
@@ -68,8 +68,6 @@ function AppInner() {
 
 }
 
-const LOAD_STATE = { STORAGE: 1, CONFIG: 2, COMPLETE: 3 };
-
 function Routing() {
   return (
     <Routes>
@@ -86,6 +84,7 @@ function Routing() {
 
 function Base() {
   const location = useLocation();
+  let navigate = useNavigate()
 
   let { connected } = useMQTTState()
 
@@ -103,6 +102,7 @@ function Base() {
           src="/logo.png"
           alt="S"
           style={{ width: "3rem", height: "3rem", margin: "0.25rem" }}
+          onClick={() => navigate("/")}
         />
 
         <Nav variant="pills" fill={true} className="me-auto">
