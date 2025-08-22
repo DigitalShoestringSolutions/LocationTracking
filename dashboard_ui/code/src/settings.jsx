@@ -1,10 +1,11 @@
 import React from "react";
 import { Button, ButtonGroup, Card, Col, Container, ListGroup, Row } from "react-bootstrap";
-import { useCache } from "./CacheContext";
-import { LocationSelector } from "./panels/filter_modal";
+import { useQueryClient } from '@tanstack/react-query'
+import { useIdListForTypes } from "./api";
+import { useFilter } from "./FilterContext";
 
 
-export function SettingsPage(props) {
+export function SettingsPage() {
   return (
     <Container fluid className="p-0 d-flex flex-column">
       <Container fluid className="flex-grow-1 px-1 pt-2 px-sm-2">
@@ -13,7 +14,7 @@ export function SettingsPage(props) {
             <Card className='my-2'>
               <Card.Header><h4>Settings</h4></Card.Header>
               <Card.Body>
-                <LocationManager {...props} />
+                <LocationManager />
                 <ClearCache />
               </Card.Body>
             </Card>
@@ -24,29 +25,33 @@ export function SettingsPage(props) {
   )
 }
 
-function LocationManager({ location_list, config, location_filter, saveLocationFilter, shown_locations, saveShownLocations }) {
+function LocationManager() {
   let [available, setAvailable] = React.useState([])
   let [new_shown, setNewShown] = React.useState([])
   let [selected, setSelected] = React.useState(null)
   let [select_type, setSelectType] = React.useState(null)
   let [changed, setChanged] = React.useState(false)
 
+  let { location_types, location_filter, setLocationFilter } = useFilter()
+  let { data: all_locations } = useIdListForTypes(location_types)
+
   React.useEffect(() => {
-    // let tmp_shown = shown_locations ? location_list.filter(elem => shown_locations.indexOf(elem.id) > -1) : []
-    let tmp_shown = shown_locations
-      ? shown_locations.reduce((acc, elem) => {
-        let res = location_list.find(item => item.id === elem)
-        if (res)
-          acc.push(res)
-        return acc
-      }, [])
-      : []
-    setNewShown(tmp_shown)
-    setAvailable(location_list.filter(elem => tmp_shown.indexOf(elem) === -1))
-  }, [location_list, location_filter, shown_locations])
+    if (all_locations) {
+      let tmp_shown = location_filter
+        ? location_filter.reduce((acc, elem) => {
+          let res = all_locations.find(item => item.id === elem)
+          if (res)
+            acc.push(res)
+          return acc
+        }, [])
+        : []
+      setNewShown(tmp_shown)
+      setAvailable(all_locations.filter(elem => tmp_shown.indexOf(elem) === -1))
+    }
+  }, [location_filter, all_locations])
 
   const doSave = () => {
-    saveShownLocations(new_shown.map(elem => elem.id))
+    setLocationFilter(new_shown.map(elem => elem.id))
     setChanged(false)
   }
 
@@ -54,14 +59,13 @@ function LocationManager({ location_list, config, location_filter, saveLocationF
     <Row>
       <h4>Shown Locations
         <Button className="ms-1 float-end" variant="warning" onClick={() => {
-          saveLocationFilter(config.locations.defaults.reduce((obj, elem) => { obj[elem] = true; return obj }, {}));
-          saveShownLocations(undefined)
-          }}>Reset</Button>
+          setLocationFilter(undefined)
+        }}>Reset</Button>
         <Button className="float-end" disabled={!changed} onClick={doSave}>Save</Button></h4>
     </Row>
-    <Row>
+    {/* <Row>
       <LocationSelector config={config} state={location_filter} setState={(filter) => {setChanged(true);saveLocationFilter(filter)}} />
-    </Row>
+    </Row> */}
     <Row>
       <Col>
         <ListGroup>
@@ -89,7 +93,7 @@ function LocationManager({ location_list, config, location_filter, saveLocationF
                 return tmp
               })
               setAvailable(prev => {
-                let entry = location_list.find(elem => elem.id === selected)
+                let entry = all_locations.find(elem => elem.id === selected)
                 return [entry, ...prev]
               })
               setSelectType("available")
@@ -108,7 +112,7 @@ function LocationManager({ location_list, config, location_filter, saveLocationF
                 return tmp
               })
               setNewShown(prev => {
-                let entry = location_list.find(elem => elem.id === selected)
+                let entry = all_locations.find(elem => elem.id === selected)
                 return [entry, ...prev]
               })
               setSelectType("shown")
@@ -163,9 +167,10 @@ function LocationManager({ location_list, config, location_filter, saveLocationF
 }
 
 function ClearCache() {
-  let { clear_cache, get_size } = useCache()
+  let [done, setDone] = React.useState(false)
+  let queryClient = useQueryClient()
+
   return <Row className="py-2">
-    <h4>Item Name Cache <Button className="float-end" variant="warning" disabled={get_size() === 0} onClick={() => clear_cache()}>Clear</Button></h4>
-    <div>Size: {get_size()}</div>
+    <h4>Item Name Cache {done ? " (Empty)" : ""}  <Button className="float-end" variant="warning" disabled={done} onClick={() => { queryClient.clear(); setDone(true) }}>Clear</Button></h4>
   </Row>
 }

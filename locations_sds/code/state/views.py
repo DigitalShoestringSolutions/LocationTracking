@@ -251,10 +251,14 @@ def eventsAtLocLink(request, location_link):
     transfer_serializer = TransferEventSerializer(qs, many=True)
 
     qs_prod = ProductionEvent.objects.filter(
-        Q(location_link__exact=location_link) & timeframe_q
+        (
+            Q(location_link__exact=location_link)
+            | Q(from_location_link__exact=location_link)
+        )
+        & timeframe_q
     )
     produced_serializer = ProductionEventSerializer(qs_prod, many=True)
-    
+
     qs_cons = ProductionEventInput.objects.filter(
         Q(location_link__exact=location_link) & timeframe_q
     )

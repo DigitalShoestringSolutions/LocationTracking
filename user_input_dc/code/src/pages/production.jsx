@@ -129,7 +129,7 @@ export function ProductionOperation() {
 
         payload.inputs = inputs_payload
 
-        console.log(payload)
+        console.log("Submitting: ",payload)
 
         try {
             sendJsonMessage(topic, payload);

@@ -33,6 +33,7 @@ class ProductionEventSerializer(serializers.ModelSerializer):
             "event_id",
             "item_id",
             "location_link",
+            "from_location_link",
             "timestamp",
             "quantity",
         )

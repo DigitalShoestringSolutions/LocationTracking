@@ -23,6 +23,7 @@ class IdentitySerializerFull(serializers.ModelSerializer):
         rep = super().to_representation(obj)
         rep['id'] = obj.get_id()
         rep['individual'] = obj.type.individual
+        rep['type'] = obj.type.tag
         return rep
 
 

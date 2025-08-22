@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 
 import { default_new_message_action } from "./default_actions";
 import { DefaultReducer } from "./default_reducer";
+import { useQueryClient } from "@tanstack/react-query"
 
 const MQTTSendContext = React.createContext();
 
@@ -63,6 +64,8 @@ export const MQTTProvider = ({
   const [sub_state, setSubState] = React.useState({})
   const [client, setClient] = React.useState(undefined)
   const [reset_substate, setResetSubstate] = React.useState(false)
+
+  const queryClient = useQueryClient()
 
   const subscribe = React.useCallback((topic) => {
     debug && console.log("Adding '" + topic + "' to subscription list")
@@ -204,7 +207,7 @@ export const MQTTProvider = ({
   React.useEffect(() => {
     if (message_queue.length > 0) {
       for (let message of message_queue) {
-        new_message_action(dispatch, message)
+        new_message_action(dispatch, queryClient, message)
       }
       setMessageQueue([])
     }

@@ -184,9 +184,11 @@ def production_individual(event: ProductionEvent, inputs: list[ProductionEventIn
     all_output_messages = []
     with transaction.atomic():
 
-        _, produced_item, update_msgs = __transfer_individual(
+        prevState, produced_item, update_msgs = __transfer_individual(
             event.item_id, event.location_link, event.timestamp
         )
+        if prevState is not None:
+            event.from_location_link = prevState.location_link
         print(update_msgs)
         # add to msg queue
         all_output_messages.extend(update_msgs)
@@ -205,12 +207,13 @@ def production_individual(event: ProductionEvent, inputs: list[ProductionEventIn
                 )
                 all_output_messages.append(output_message)
             else:
-                _, _, output_messages = __transfer_individual(
-                    input.item_id,
-                    produced_item.item_id,
-                    event.timestamp,
-                )
-                all_output_messages.extend(output_messages)
+                if input.item_id != produced_item.item_id:  # ensure an item can't be it's own child
+                    _, _, output_messages = __transfer_individual(
+                        input.item_id,
+                        produced_item.item_id,
+                        event.timestamp,
+                    )
+                    all_output_messages.extend(output_messages)
 
     return all_output_messages
 

@@ -19,7 +19,7 @@ services:
     locations-sds:
         extends:
             file: locations_sds/app.yml
-            service: dev
+            service: app
         networks:
             internal:
                 aliases:
