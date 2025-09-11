@@ -1,0 +1,5 @@
+build: "placeholder"
+command: sh -c "python manage.py collectstatic --noinput &&
+  python manage.py migrate &&
+  daphne -b 0.0.0.0 -p 80 site_config.asgi:application"
+x-shoestring-setup-command: ["python","setup.py"]

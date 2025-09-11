@@ -1,0 +1,9 @@
+
+[db]
+    dockerfile = "Dockerfile"
+    compose_partial = "snippet.yml"
+    volume.data.path = "/app/data"
+    volume.user_config.path = "/app/user_config"
+
+    ports.api = 80
+    
