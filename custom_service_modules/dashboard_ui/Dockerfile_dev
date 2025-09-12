@@ -1,0 +1,6 @@
+FROM node:24-alpine
+WORKDIR /app
+COPY ./code/package.json /app
+RUN npm install
+COPY ./code/ /app
+COPY --from=solution_config ui/. /app/public/config/

@@ -1,7 +1,4 @@
-**/data/*
-**/changes/*
-**/lstart.sh
+data/**
+assembled/**
+console_log.html
 **__pycache__
-!**/.gitkeep
-**/django_secret_key
-**/default_password

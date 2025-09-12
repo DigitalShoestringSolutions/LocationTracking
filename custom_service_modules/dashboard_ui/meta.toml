@@ -1,0 +1,16 @@
+
+[webserver]
+    dockerfile = "Dockerfile"
+    compose_partial = "snippet.yml"
+    volume.data.ignore = true
+    volume.user_config.ignore = true
+
+    ports.ui = 80
+    
+[dev]
+    dockerfile = "Dockerfile_dev"
+    compose_partial = "snippet.yml"
+    volume.data.ignore = true
+    volume.user_config.ignore = true
+
+    ports.ui = 80
