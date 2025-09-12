@@ -11,11 +11,11 @@ recipe_vsn = "1.0.0"
     git.path = "sm_barcode_dc"
     git.tag = "v1.0.0"
 [source.location_sds]
-    file.path = "./custom_service_modules/locations_sds"
-    file.mode = "link"
+    git.path = "django_relational_db"
+    git.tag = "v1.0.0"
 [source.identity_sds]
-    file.path = "./custom_service_modules/identity_sds"
-    file.mode = "link"
+    git.path = "django_relational_db"
+    git.tag = "v1.0.0"
 [source.user_input_ui]
     file.path = "./custom_service_modules/user_input_dc"
     file.mode = "link"

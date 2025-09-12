@@ -1,123 +1,84 @@
-import zmq
-import json
-import threading
 from state.models import State, TransferEvent, ProductionEvent, ProductionEventInput
-from datetime import datetime
-import dateutil.parser
 from django.db import transaction
-from . import serializers
+from . import mqtt_serializers as serializers
 import traceback
+from event_handler import Event, EventHandler
 
-context = zmq.Context()
+
+@EventHandler.register("transfer_operation")
+def handle_transfer_op_message(msg: Event):
+    print(f"handling: {msg}")
+    # listen for incoming events
+    try:
+        # validate
+        serializer = serializers.TransferOperation(data=msg.content)
+        serializer.is_valid(raise_exception=True)
+
+        # log event
+        event = TransferEvent(**serializer.validated_data)
+
+        if event.from_location_link == event.to_location_link:
+            return
+
+        # check item individual or collection?
+
+        if event.quantity is not None and event.from_location_link is not None:
+            output = transfer_collection(event)
+        else:
+            output = transfer_individual(event)
+
+        event.save()
+
+        return output
+
+    except Exception as e:
+        print("ERROR")
+        print(traceback.format_exc())
 
 
-class StateModel:
-    def __init__(self, zmq_config):
-        self.subsocket = context.socket(zmq.SUB)
-        self.subsocket.connect(zmq_config["pub_ep"])
-        self.subsocket.setsockopt(zmq.SUBSCRIBE, zmq_config["inbound_topic"].encode())
+@EventHandler.register("production_operation")
+def handle_prod_op_message(msg: Event):
+    print(f"handling: {msg}")
+    # listen for incoming events
+    try:
+        # validate
+        serializer = serializers.ProductionOperation(data=msg.content)
+        serializer.is_valid(raise_exception=True)
 
-        self.pushsocket = context.socket(zmq.PUSH)
-        self.pushsocket.connect(zmq_config["sub_ep"])
+        prod_event_data = {**serializer.validated_data}
+        prod_event_input_data = prod_event_data.pop("inputs", [])
+        prod_event = ProductionEvent(**prod_event_data)
+        print(prod_event_input_data)
+        prod_event_inputs = [
+            ProductionEventInput(
+                production_event=prod_event,
+                **{
+                    "location_link": prod_event.location_link,
+                    "timestamp": prod_event.timestamp,
+                    **entry,
+                },
+            )
+            for entry in prod_event_input_data
+        ]
 
-    def start(self):
-        t = threading.Thread(target=self.run)
-        t.start()
+        print(prod_event)
+        print(prod_event_inputs)
 
-    def run(self):
-        while True:
-            msg = self.subsocket.recv_multipart()
-            print("StateModel got:", msg)
-            try:
-                topic = msg[-2].decode().split("/")
-                json_msg = json.loads(msg[-1])
-                if topic[0] == "transfer_operation":
-                    self.handle_transfer_op_message(json_msg)
-                if topic[0] == "production_operation":
-                    self.handle_prod_op_message(json_msg)
-            except Exception as e:
-                print("ERROR")
-                print(traceback.format_exc())
+        # check item individual or collection?
+        if prod_event.quantity is not None:
+            output = production_collection(prod_event, prod_event_inputs)
+        else:
+            output = production_individual(prod_event, prod_event_inputs)
 
-    def handle_transfer_op_message(self, raw_msg):
-        print(f"handling: {raw_msg}")
-        # listen for incoming events
-        try:
-            # validate
-            serializer = serializers.TransferOperation(data=raw_msg)
-            serializer.is_valid(raise_exception=True)
+        prod_event.save()
+        for input in prod_event_inputs:
+            input.save()
 
-            # log event
-            event = TransferEvent(**serializer.validated_data)
+        return output
 
-            if event.from_location_link == event.to_location_link:
-                return
-
-            # check item individual or collection?
-
-            if event.quantity is not None and event.from_location_link is not None:
-                output = transfer_collection(event)
-            else:
-                output = transfer_individual(event)
-
-            event.save()
-
-            # send update(s)
-            for msg in output:
-                self.pushsocket.send_multipart(
-                    [msg["topic"].encode(), json.dumps(msg["payload"]).encode()]
-                )
-
-        except Exception as e:
-            print("ERROR")
-            print(traceback.format_exc())
-
-    def handle_prod_op_message(self, raw_msg):
-        print(f"handling: {raw_msg}")
-        # listen for incoming events
-        try:
-            # validate
-            serializer = serializers.ProductionOperation(data=raw_msg)
-            serializer.is_valid(raise_exception=True)
-
-            prod_event_data = {**serializer.validated_data}
-            prod_event_input_data = prod_event_data.pop("inputs", [])
-            prod_event = ProductionEvent(**prod_event_data)
-            print(prod_event_input_data)
-            prod_event_inputs = [
-                ProductionEventInput(
-                    production_event=prod_event,
-                    **{
-                        "location_link": prod_event.location_link,
-                        "timestamp": prod_event.timestamp,
-                        **entry,
-                    },
-                )
-                for entry in prod_event_input_data
-            ]
-
-            print(prod_event)
-            print(prod_event_inputs)
-
-            # check item individual or collection?
-            if prod_event.quantity is not None:
-                output = production_collection(prod_event, prod_event_inputs)
-            else:
-                output = production_individual(prod_event, prod_event_inputs)
-
-            prod_event.save()
-            for input in prod_event_inputs:
-                input.save()
-
-            # send update(s)
-            for msg in output:
-                self.pushsocket.send_multipart(
-                    [msg["topic"].encode(), json.dumps(msg["payload"]).encode()]
-                )
-
-        except Exception as e:
-            print("ERROR")
-            print(e)
+    except Exception as e:
+        print("ERROR")
+        print(e)
 
 
 def transfer_collection(event: TransferEvent):
@@ -207,7 +168,9 @@ def production_individual(event: ProductionEvent, inputs: list[ProductionEventIn
                 )
                 all_output_messages.append(output_message)
             else:
-                if input.item_id != produced_item.item_id:  # ensure an item can't be it's own child
+                if (
+                    input.item_id != produced_item.item_id
+                ):  # ensure an item can't be it's own child
                     _, _, output_messages = __transfer_individual(
                         input.item_id,
                         produced_item.item_id,
@@ -233,15 +196,15 @@ def __transfer_individual(item_id, to_loc, timestamp):
         prevState.end = timestamp
         prevState.save()
 
-        exited_msg = {
-            "topic": f"location_state/exited/{prevState.location_link}",
-            "payload": {
+        exited_msg = Event(
+            f"location_state/exited/{prevState.location_link}",
+            {
                 "item_id": item_id,
                 "location_link": prevState.location_link,
                 "timestamp": timestamp.isoformat(),
                 "event": "exited",
             },
-        }
+        )
         print(exited_msg)
         # send update
         output_messages.append(exited_msg)
@@ -256,15 +219,15 @@ def __transfer_individual(item_id, to_loc, timestamp):
             start=timestamp,
         )
 
-        entered_msg = {
-            "topic": f"location_state/entered/{newState.location_link}",
-            "payload": {
+        entered_msg = Event(
+            f"location_state/entered/{newState.location_link}",
+            {
                 "item_id": newState.item_id,
                 "location_link": newState.location_link,
                 "timestamp": newState.start.isoformat(),
                 "event": "entered",
             },
-        }
+        )
         output_messages.append(entered_msg)
     else:
         newState = None
@@ -293,15 +256,15 @@ def __reduce_collection(item_id, from_loc, quantity, timestamp):
             quantity=newFromQuantity,
         )
 
-    return {
-        "topic": f"location_state/update/{from_loc}",
-        "payload": {
+    return Event(
+        f"location_state/update/{from_loc}",
+        {
             "item_id": item_id,
             "location_link": from_loc,
             "timestamp": timestamp.isoformat(),
             "quantity": newFromQuantity,
         },
-    }
+    )
 
 
 def __increase_collection(item_id, to_loc, quantity, timestamp):
@@ -322,15 +285,15 @@ def __increase_collection(item_id, to_loc, quantity, timestamp):
         item_id=item_id, location_link=to_loc, start=timestamp, quantity=newToQuantity
     )
 
-    return {
-        "topic": f"location_state/update/{newToState.location_link}",
-        "payload": {
+    return Event(
+        f"location_state/update/{newToState.location_link}",
+        {
             "item_id": newToState.item_id,
             "location_link": newToState.location_link,
             "timestamp": newToState.start.isoformat(),
             "quantity": newToState.quantity,
         },
-    }
+    )
 
 
 def increment_quantity(base, amount):
