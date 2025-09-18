@@ -1,5 +1,4 @@
 export const DefaultReducer = (currentState, action) => {
-  console.log(action)
   switch (action.type) {
     case 'MQTT_STATUS':
       return {

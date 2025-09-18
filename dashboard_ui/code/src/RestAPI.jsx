@@ -57,7 +57,6 @@ async function api_call(url, settings = {}) {
     return { status: response.status, payload: output }
   } else {
     output = await response.text()
-    console.log(output)
     return { status: response.status, payload: output}
   }
 }
