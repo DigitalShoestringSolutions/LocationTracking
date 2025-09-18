@@ -34,6 +34,7 @@ def identify(request,identifier_type,identifier):
         identity = idfier.target
         print(f"{identifier_type}:{identifier}>Found:{identity.get_id()}")
     except Identifier.DoesNotExist:
+        has_match = False
         for pattern_obj in idfier_type.patterns.all():
             pattern = re.compile(pattern_obj.pattern)
             match = pattern.match(identifier)
@@ -42,8 +43,10 @@ def identify(request,identifier_type,identifier):
                 identity = IdentityEntry.objects.create(type=pattern_obj.id_type,**dataset)
                 Identifier.objects.create(type=idfier_type,value=identifier,target=identity)
                 print(f"{identifier_type}:{identifier}>Created:{identity.get_id()}")
+                has_match = True
+        if not has_match:
+            return Response(status=404)
 
-    
     if full is not False:
         serializer = IdentitySerializerFull(identity)
     else:
@@ -54,26 +57,31 @@ def identify(request,identifier_type,identifier):
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
 def getID(request,id=None):
     if id is not None:
-        ids = [id]
+        *id_type, id_num = id.split("@")
+
+        try:
+            identity = IdentityEntry.objects.get(auto_id=id_num)
+        except IdentityEntry.DoesNotExist:
+            return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = IdentitySerializerFull(identity, many=False)
     else:
         raw_ids = request.GET.getlist("id")
         ids = [urllib.parse.unquote(id) for id in raw_ids]
 
-    print(ids)
-    id_nums = []
-    for id_entry in ids:
-        *id_type,id_num = id_entry.split('@')
-        id_nums.append(id_num)
-    
-    try:
-        identities = IdentityEntry.objects.filter(auto_id__in=id_nums)
-    except IdentityEntry.DoesNotExist:
-        return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
-        
-    serializer = IdentitySerializerFull(identities,many=True)
+        id_nums = []
+        for id_entry in ids:
+            *id_type,id_num = id_entry.split('@')
+            id_nums.append(id_num)
+
+        try:
+            identities = IdentityEntry.objects.filter(auto_id__in=id_nums)
+        except IdentityEntry.DoesNotExist:
+            return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = IdentitySerializerFull(identities,many=True)
 
     return Response(serializer.data)
-
 
 
 @api_view(('GET',))

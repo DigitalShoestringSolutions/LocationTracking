@@ -1,42 +1,40 @@
 import React from "react"
-import { load_type_list, load_types } from "../fetch_data"
 import { Button, Modal, Spinner } from "react-bootstrap"
+import { useIdListForTypes, useIdTypes } from "../api"
+import { useFilter } from "../FilterContext"
 
-export function FilterModal({ config, show, handleClose, current_filter }) {
-  let [loaded, setLoaded] = React.useState(false)
-  let [pending, setPending] = React.useState(false)
-  let [error, setError] = React.useState(undefined)
-  let [types, setTypes] = React.useState([])
+export function FilterModal({ show, handleClose }) {
 
-  let [state, setState] = React.useState(current_filter)
+  let { item_filter, setItemFilter } = useFilter()
 
-  let load_types_callback = React.useCallback(load_types, [])
+  let [state, setState] = React.useState(item_filter)
 
-  React.useEffect(() => {
-    if (!loaded && !pending) {
-      load_types_callback(config, setPending, setLoaded, setError, setTypes)
-    }
-  }, [config, config.api, config.db, load_types_callback, loaded, pending])
+  const do_handle_close = (filter_value) => {
+    setItemFilter(filter_value)
+    handleClose()
+  }
 
   React.useEffect(() => {
-    setState(current_filter)
-  },[current_filter])
+    setState(item_filter)
+  }, [item_filter])
 
-  return <Modal restoreFocus={false} show={show} onHide={() => handleClose(state)}>
+  return <Modal restoreFocus={false} show={show} onHide={() => do_handle_close(state)}>
     <Modal.Header>
-      <Modal.Title className="w-100"><h4>Filter: 
-      <Button className="ms-1 float-end" variant="primary" onClick={() => handleClose(state)}>Save</Button>
-      <Button className="float-end" variant="warning" onClick={() => handleClose(undefined)}>Reset</Button>
+      <Modal.Title className="w-100"><h4>Filter Shown Items:
+        <Button className="ms-1 float-end" variant="primary" onClick={() => do_handle_close(state)}>Save</Button>
+        <Button className="float-end" variant="warning" onClick={() => do_handle_close(undefined)}>Reset</Button>
       </h4></Modal.Title>
     </Modal.Header>
-    <Modal.Body><FilterBody config={config} loaded={loaded} error={error} types={types} state={state} setState={setState} /></Modal.Body>
+    <Modal.Body><FilterBody state={state} setState={setState} /></Modal.Body>
   </Modal>
 }
 
-function FilterBody({ config, loaded, error, types, state, setState }) {
+function FilterBody({ state, setState }) {
   let [lists, doSetLists] = React.useState({})
+  let { data: types, isLoading, error } = useIdTypes()
+  let { location_types } = useFilter()
 
-  if (!loaded) {
+  if (isLoading) {
     return error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>
   }
 
@@ -81,7 +79,18 @@ function FilterBody({ config, loaded, error, types, state, setState }) {
   }
 
   return <div>
-    {types.map(elem => <DisplayType key={elem.tag} config={config} state={state[elem.tag]} type_tag={elem.tag} label={elem.title} handleClick={handleClick} list={lists[elem.tag] ?? []} setList={(value) => setList(elem.tag, value)} />)}
+    {types.filter(
+      elem => location_types.indexOf(elem.tag) == -1  // do all types except the location types
+    ).map(elem =>
+      <DisplayType
+        key={elem.tag}
+        state={state[elem.tag]}
+        type_tag={elem.tag}
+        label={elem.title}
+        handleClick={handleClick}
+        list={lists[elem.tag] ?? []}
+        setList={(value) => setList(elem.tag, value)}
+      />)}
   </div>
 }
 
@@ -96,20 +105,16 @@ function DisplayType(props) {
   </div>
 }
 
-function DisplayIdentities({ config, type_tag, state, handleClick, list, setList }) {
-  let [loaded, setLoaded] = React.useState(false)
-  let [pending, setPending] = React.useState(false)
-  let [error, setError] = React.useState(null)
-
-  let load_type_list_callback = React.useCallback(load_type_list, [])
+function DisplayIdentities({ type_tag, state, handleClick, list, setList }) {
+  let { data: fetched_list, isLoading, error } = useIdListForTypes(type_tag)
 
   React.useEffect(() => {
-    if (!loaded && !pending) {
-      load_type_list_callback(config, type_tag, setPending, setLoaded, setError, setList)
+    if (fetched_list) {
+      setList(fetched_list)
     }
-  }, [loaded, pending, config, load_type_list_callback, type_tag, setList])
+  }, [fetched_list])
 
-  if (!loaded) {
+  if (isLoading) {
     return error ? error : "Loading..."
   }
 
@@ -137,33 +142,33 @@ function TriStateCheckbox({ state, label, handleClick }) {
   return <span role="button" onClick={handleClick} className={"bi bi-" + icon}>{" "}{label}</span>
 }
 
-export function LocationSelector({ config, state, setState }) {
+// export function LocationSelector({ config, state, setState }) {
 
-  let [loaded, setLoaded] = React.useState(false)
-  let [pending, setPending] = React.useState(false)
-  let [error, setError] = React.useState(undefined)
-  let [types, setTypes] = React.useState([])
+//   let [loaded, setLoaded] = React.useState(false)
+//   let [pending, setPending] = React.useState(false)
+//   let [error, setError] = React.useState(undefined)
+//   let [types, setTypes] = React.useState([])
 
-  let load_types_callback = React.useCallback(load_types, [])
+//   let load_types_callback = React.useCallback(load_types, [])
 
-  React.useEffect(() => {
-    if (!loaded && !pending) {
-      load_types_callback(config, setPending, setLoaded, setError, setTypes)
-    }
-  }, [config, load_types_callback, loaded, pending])
+//   React.useEffect(() => {
+//     if (!loaded && !pending) {
+//       load_types_callback(config, setPending, setLoaded, setError, setTypes)
+//     }
+//   }, [config, load_types_callback, loaded, pending])
 
-  if (!loaded) {
-    return error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>
-  }
+//   if (!loaded) {
+//     return error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>
+//   }
 
-  const handleClick = (type) => {
-    setState(prev => ({ ...prev, [type]: !(prev[type] === true) }))
-  }
+//   const handleClick = (type) => {
+//     setState(prev => ({ ...prev, [type]: !(prev[type] === true) }))
+//   }
 
-  return <div className="d-flex justify-content-around">
-    {types.map(elem => (
-      <div key={elem.tag} >
-        <TriStateCheckbox state={state[elem.tag]} label={elem.title} handleClick={() => handleClick(elem.tag)} />
-      </div>))}
-  </div>
-}
+//   return <div className="d-flex justify-content-around">
+//     {types.map(elem => (
+//       <div key={elem.tag} >
+//         <TriStateCheckbox state={state[elem.tag]} label={elem.title} handleClick={() => handleClick(elem.tag)} />
+//       </div>))}
+//   </div>
+// }

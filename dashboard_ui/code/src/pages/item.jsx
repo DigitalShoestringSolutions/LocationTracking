@@ -1,9 +1,9 @@
 import React from "react";
 import { Button, Card, Container, Dropdown, DropdownButton, Form, InputGroup, Spinner, Table } from "react-bootstrap";
-import { NavLink, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import dayjs from 'dayjs'
-import { useMQTTDispatch, useMQTTState } from "../MQTTContext";
 import { PaginateWidget, groupBy, paginate } from "../table_utils";
+import { useQueryClient } from '@tanstack/react-query'
 
 import {
   Chart as ChartJS,
@@ -19,8 +19,11 @@ import {
 import { Line } from 'react-chartjs-2';
 
 import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
-import { useCache } from "../CacheContext";
-import { load_item_history } from "../fetch_data";
+import { useHistoryFor, useItem, useStateAt } from "../api";
+import { ItemName } from "../components/item";
+import { LoadingIndicator } from "../components/loading";
+import { ErrorIndicator } from "../components/error";
+import { useFilter } from "../FilterContext";
 
 ChartJS.register(
   TimeScale,
@@ -35,65 +38,50 @@ ChartJS.register(
 
 
 
-export function ItemPage({ config = {}, location_list, shown_locations, settings_page_size }) {
+export function ItemPage() {
   let params = useParams();
   const current_item_id = params.item_id
 
-  let { cache_fetch } = useCache();
+  let { data: current_item, isLoading, error } = useItem(current_item_id)
 
-  let current_item = cache_fetch(current_item_id)
 
-  if (!current_item) {
-    return <Container fluid="md">
-      <Card className='mt-2 text-center'>
-        <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>
-      </Card>
-    </Container>
-  }
+  if (isLoading)
+    return <LoadingIndicator />
+
+  if (error)
+    return <ErrorIndicator error={error} />
+
 
   return <Container fluid className="p-0 d-flex flex-column">
     <Container className="flex-grow-1 p-0 ">
       {current_item.individual
-        ? <IndividualItem config={config} item={current_item} location_list={location_list} />
-        : <CollectionItem config={config} item={current_item} location_list={location_list} shown_locations={shown_locations} />}
+        ? <IndividualItem item={current_item} />
+        : <CollectionItem item={current_item} />}
     </Container>
   </Container>
 
 }
 
-function IndividualItem({ config, item, location_list }) {
+function IndividualItem({ item }) {
   const [active_page, setActive] = React.useState(1)
   const [page_size, setPageSize] = React.useState(15)
-  let dispatch = useMQTTDispatch()
-  let [loaded, setLoaded] = React.useState(false)
-  let [pending, setPending] = React.useState(false)
-  let [error, setError] = React.useState(undefined)
 
-  let load_item_history_callback = React.useCallback(load_item_history, [])
-  let { item_history } = useMQTTState()
+  let { data: item_history, isLoading, error } = useHistoryFor(item.id)
 
-  React.useEffect(() => {
-    if ((!loaded && !pending)) {
-      load_item_history_callback(config, item, setPending, dispatch, setLoaded, setError)
-    }
-  }, [config, config.api, config.db, dispatch, loaded, item, load_item_history_callback, pending])
+  if (isLoading)
+    return <LoadingIndicator />
 
-  if (!loaded) {
-    return <Container fluid="md">
-      <Card className='mt-2 text-center'>
-        {error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>}
-      </Card>
-    </Container>
-  }
+  if (error)
+    return <ErrorIndicator error={error} />
 
   let last_date = ""
 
   let n_pages = Math.ceil(item_history.length / page_size)
   let current_page_set = paginate(item_history, page_size, active_page)
 
-  return <Card className='my-2'>
+  return <><Card className='my-2'>
     <Card.Header className='d-flex flex-row justify-content-between'>
-      <h4 className='flex-shrink-0 flex-grow-1'>{item.name}:</h4>
+      <h4 className='flex-shrink-0 flex-grow-1'>Location History for: {item.name}</h4>
       <InputGroup className="flex-grow-0 flex-shrink-0 my-2" style={{ width: "max-content" }}>
         <DropdownButton variant="outline-secondary" title={"Show: " + page_size} size="sm" value={page_size}>
           <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
@@ -124,7 +112,8 @@ function IndividualItem({ config, item, location_list }) {
             return <tr key={index}>
               <td className="text-end">{shown_date}</td>
               <td>{start_timestamp.format('HH:mm:ss')}</td>
-              <td><i className="bi bi-geo-alt pe-1" /><NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={"/loc/" + entry.location_link}>{location_list.find(elem => elem.id === entry.location_link).name}</NavLink></td>
+
+              <td><ItemName id={entry.location_link} /></td>
               <td><i className="bi bi-stopwatch pe-1" />{entry.end ? format_duration(dayjs.duration(dayjs(entry.end).diff(start_timestamp))) : "..."}</td>
             </tr>
           })}
@@ -133,6 +122,8 @@ function IndividualItem({ config, item, location_list }) {
       <PaginateWidget active={active_page} n_pages={n_pages} setPage={(number) => setActive(number)} />
     </Card.Body>
   </Card>
+    <ItemComposition item={item} />
+  </>
 }
 
 function format_duration(d) {
@@ -144,7 +135,48 @@ function format_duration(d) {
     return d.format('m[m]ss[s]')
 }
 
-function CollectionItem({ config, item, location_list, shown_locations }) {
+function ItemComposition({ item }) {
+  let { data: composition, error, isLoading } = useStateAt(item.id)
+
+
+  if (isLoading)
+    return <LoadingIndicator />
+
+  if (error)
+    return <ErrorIndicator error={error} />
+
+
+  return <Card className='my-2'>
+    <Card.Header className='d-flex flex-row justify-content-between'>
+      <h4 className='flex-shrink-0 flex-grow-1'>Composition of: {item.name}</h4>
+    </Card.Header>
+    <Card.Body className="p-0">
+      <Table striped size="sm">
+        <thead>
+          <tr>
+            <th>Item:</th>
+            <th>Quantity:</th>
+            <th>Time added:</th>
+          </tr>
+        </thead>
+        <tbody>
+          {composition.map((entry, index) => {
+            return <tr key={index}>
+              <td><ItemName id={entry.item_id} link_if_collective={false} /></td>
+              <td>{entry?.quantity ?? "<individual>"}</td>
+              <td>{dayjs(entry.start).format('DD/MM/YYYY HH:mm:ss')}</td>
+            </tr>
+          })}
+        </tbody>
+      </Table>
+    </Card.Body>
+  </Card>
+}
+
+
+function CollectionItem({ item }) {
+
+  let { location_filter } = useFilter()
 
   const periods = {
     'day': {
@@ -167,37 +199,25 @@ function CollectionItem({ config, item, location_list, shown_locations }) {
     }
   }
 
-  let dispatch = useMQTTDispatch()
-
-  let [loaded, setLoaded] = React.useState(false)
-  let [pending, setPending] = React.useState(false)
-  let [error, setError] = React.useState(undefined)
-
   let [show_day, setShowDay] = React.useState(dayjs())
   let [period, setPeriod] = React.useState(Object.keys(periods)[0])
 
-  let load_item_history_callback = React.useCallback(load_item_history, [])
-
-  let { item_history } = useMQTTState()
+  let queryClient = useQueryClient()
 
   let now = dayjs()
   let start_period = show_day.startOf(period)
   let next_period = show_day.add(1, period).startOf(period)
-  let end_period = now.isBefore(next_period) ? now : next_period
+  let end_period = now.isBefore(next_period) ? now.endOf(period) : next_period
 
-  React.useEffect(() => {
-    if ((loaded?.start !== start_period.toISOString() && loaded?.end !== end_period.toISOString() && !pending)) {
-      load_item_history_callback(config, item, setPending, dispatch, setLoaded, setError, start_period, end_period)
-    }
-  }, [config, config.api, config.db, dispatch, end_period, loaded, item, load_item_history_callback, pending, start_period])
+  let { data: item_history, isLoading, error } = useHistoryFor(item.id, start_period, end_period)
 
-  if (!loaded) {
-    return <Container fluid="md">
-      <Card className='mt-2 text-center'>
-        {error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>}
-      </Card>
-    </Container>
-  }
+  if (isLoading)
+    return <LoadingIndicator />
+
+  if (error)
+    return <ErrorIndicator error={error} />
+
+
 
   const options = {
     responsive: true,
@@ -206,14 +226,14 @@ function CollectionItem({ config, item, location_list, shown_locations }) {
       legend: {
         position: 'top',
       },
-      title: {
-        display: true,
-        text: "History for " + item.name + ":",
-        font: {
-          size: 35,
-          weight: "bold"
-        }
-      },
+      // title: {
+      //   display: true,
+      //   text: "History for " + item.name + ":",
+      //   font: {
+      //     size: 35,
+      //     weight: "bold"
+      //   }
+      // },
     },
     scales: {
       x: {
@@ -231,10 +251,10 @@ function CollectionItem({ config, item, location_list, shown_locations }) {
   };
 
   let raw_data = groupBy(item_history, "location_link")
-  let filtered_data = shown_locations.reduce((acc, key) => { if (raw_data[key]) acc[key] = raw_data[key]; return acc }, {})
-  console.log(filtered_data, raw_data, shown_locations)
+  let filtered_data = location_filter.reduce((acc, key) => { if (raw_data[key]) acc[key] = raw_data[key]; return acc }, {})
+  console.log(filtered_data, raw_data, location_filter)
   let datasets = Object.keys(filtered_data).map(loc_id => ({
-    label: location_list.find(elem => elem.id === loc_id).name,
+    label: queryClient.getQueryData(['id', { id: loc_id }])?.payload?.name,
     data: filtered_data[loc_id].reduce((acc, elem) => {
       acc.unshift({ y: elem.quantity, x: elem.end ? elem.end : end_period.toISOString() })
       acc.unshift({ y: elem.quantity, x: dayjs(elem.start) < start_period ? start_period.toISOString() : elem.start })
@@ -249,22 +269,27 @@ function CollectionItem({ config, item, location_list, shown_locations }) {
   };
 
   return <Card className="mb-5">
-    <div className="d-flex" style={{ maxHeight: "75vh" }}>
-      <Line className="flex-grow-1" options={options} data={data} />
-    </div>
-    <InputGroup className="my-1 d-flex justify-content-center">
-      <Button variant="primary" onClick={() => setShowDay(show_day.subtract(1, period))}>
-        {"<"}
-      </Button>
-      <InputGroup.Text>{start_period.format("YYYY-MM-DD")}</InputGroup.Text>
-      <Form.Select className="flex-grow-0" style={{ width: "max-content" }} value={period} onChange={(event) => setPeriod(event.target.value)}>
-        {Object.keys(periods).map(elem => (
-          <option key={elem} value={elem}>{elem}</option>
-        ))}
-      </Form.Select>
-      <Button variant="primary" onClick={() => setShowDay(show_day.add(1, period))} disabled={now.isBefore(next_period)}>
-        {">"}
-      </Button>
-    </InputGroup>
+    <Card.Header><h3 className="text-center">History for: <ItemName id={item.id} link={false} /></h3></Card.Header>
+    <Card.Body>
+      <div className="d-flex" style={{ maxHeight: "75vh" }}>
+        <Line className="flex-grow-1" options={options} data={data} />
+      </div>
+    </Card.Body>
+    <Card.Footer>
+      <InputGroup className="my-1 d-flex justify-content-center">
+        <Button variant="primary" onClick={() => setShowDay(show_day.subtract(1, period))}>
+          {"<"}
+        </Button>
+        <InputGroup.Text>{start_period.format("YYYY-MM-DD")}</InputGroup.Text>
+        <Form.Select className="flex-grow-0" style={{ width: "max-content" }} value={period} onChange={(event) => setPeriod(event.target.value)}>
+          {Object.keys(periods).map(elem => (
+            <option key={elem} value={elem}>{elem}</option>
+          ))}
+        </Form.Select>
+        <Button variant="primary" onClick={() => setShowDay(show_day.add(1, period))} disabled={now.isBefore(next_period)}>
+          {">"}
+        </Button>
+      </InputGroup>
+    </Card.Footer>
   </Card>
 }
