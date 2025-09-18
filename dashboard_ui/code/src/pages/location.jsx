@@ -192,7 +192,7 @@ function TransactionPanel({ current_location_id, settings }) {
           <tr>
             <th className='p-0'></th>
             <th>Item:</th>
-            <th>Quantity / Length of Stay:</th>
+            <th>Quantity:</th>
             <th>Timestamp:</th>
           </tr>
         </thead>
