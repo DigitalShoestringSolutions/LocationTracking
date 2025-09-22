@@ -1,0 +1,4 @@
+[variable.location]
+    name="location"
+    type="static"
+    value="{{location_value}}"

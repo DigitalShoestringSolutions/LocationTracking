@@ -1,0 +1,7 @@
+[Q.location]
+  type="text"
+  prompt="Choose a location for this barcode scanner"
+
+[OUT.location_value]
+  var = "location"
+

@@ -1,0 +1,103 @@
+recipe_vsn = "1.0.0"
+
+[solution]
+    name = "Job Tracking"
+    slug = "job_tracking"
+    version = "2.0.0"
+    description = "Shoestring Job Tracking Starter Solution"
+
+
+[source.barcode_scanning]
+    git.path = "sm_barcode_dc"
+    git.tag = "v1.0.0"
+[source.location_sds]
+    git.path = "django_relational_db"
+    git.tag = "v1.0.0"
+[source.identity_sds]
+    git.path = "django_relational_db"
+    git.tag = "v1.0.0"
+[source.user_input_ui]
+    git.path = "react_ui"
+    git.tag = "v1.0.0"
+[source.dashboard_ui]
+    git.path = "react_ui"
+    git.tag = "v1.0.0"
+[source.mqtt_broker]
+    git.path = "sm_mqtt_broker"
+    git.tag = "v2.0.0"
+[source.logging]
+    git.path = "Logging"
+    git.tag = "v1.0.0"
+[source.plink]
+    git.path = "PlatformLink"
+    git.tag = "v1.0.0"
+
+
+
+
+[service_module.scanner-1]
+    source="barcode_scanning"
+    containers = ["sensing"]
+    template.log_level = "info"
+    volume.sensing.udev = "/run/udev"
+
+[service_module.scanner-2]
+    source="barcode_scanning"
+    containers = ["sensing"]
+    template.log_level = "warning"
+    volume.sensing.udev = "/run/udev"
+
+[service_module.scanner-3]
+    source="barcode_scanning"
+    containers = ["sensing"]
+    template.log_level = "warning"
+    volume.sensing.udev = "/run/udev"
+
+[service_module.scanner-4]
+    source="barcode_scanning"
+    containers = ["sensing"]
+    template.log_level = "warning"
+    volume.sensing.udev = "/run/udev"
+
+[service_module.job-db]
+    source = "location_sds"
+    containers = ["db"]
+    ports.db.api = 8010
+    alias.db = "job-db"
+
+[service_module.identity]
+    source = "identity_sds"
+    containers = ["db"]
+    ports.db.api = 8002
+    alias.db = "identity-sds"
+
+[service_module.dashboard]
+    source = "dashboard_ui"
+    containers = ["webserver"]
+    ports.webserver.ui = 8000
+
+[service_module.user-input]
+    source = "user_input_ui"
+    containers = ["dev"]
+    ports.dev.ui = 80
+
+
+
+[infrastructure.mqtt-broker]
+    source = "mqtt_broker"
+    containers = ["broker"]
+    ports.broker.tcp = 1883
+    ports.broker.websocket = 9001
+    alias.broker = "mqtt"
+[infrastructure.logging]
+    source = "logging"
+    containers = ["alloy","loki"]
+    ports.loki.api = 3100
+    alias.loki = "loki"
+    alias.alloy = "alloy"
+    volume.alloy.docker_sock = "/var/run/docker.sock"
+[infrastructure.platform_link]
+    source = "plink"
+    containers = ["link"]
+    ports.link.ui = 5000
+    alias.link = "platform_link"
