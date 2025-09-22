@@ -1,0 +1,12 @@
+{
+  "id": "line_1",
+  "locations": {
+    "title": "Locations",
+    "tag": "loc"
+  },
+  "api": {
+    "host": "",
+    "port": 8002,
+    "type": "barcode"
+  }
+}
