@@ -17,11 +17,11 @@ recipe_vsn = "1.0.0"
     git.path = "django_relational_db"
     git.tag = "v1.0.0"
 [source.user_input_ui]
-    file.path = "./custom_service_modules/user_input_dc"
-    file.mode = "link"
+    git.path = "react_ui"
+    git.tag = "v1.0.0"
 [source.dashboard_ui]
-    file.path = "./custom_service_modules/dashboard_ui"
-    file.mode = "link"
+    git.path = "react_ui"
+    git.tag = "v1.0.0"
 [source.mqtt_broker]
     git.path = "sm_mqtt_broker"
     git.tag = "v2.0.0"
@@ -78,8 +78,8 @@ recipe_vsn = "1.0.0"
 
 [service_module.user-input]
     source = "user_input_ui"
-    containers = ["webserver"]
-    ports.webserver.ui = 80
+    containers = ["dev"]
+    ports.dev.ui = 80
 
 
 
