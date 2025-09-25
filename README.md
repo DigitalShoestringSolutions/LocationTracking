@@ -1,23 +1,21 @@
 # Location Tracking Starter Solution
 
+## Install the Shoestring App
+In the terminal, run:
+- `sudo apt instll pipx -y`
+- `sudo pipx run shoestring-setup`
+- `sudo reboot` if prompted to restart
 
-## Download
-Clone this repo: `git clone https://github.com/DigitalShoestringSolutions/LocationTracking`  
-Open the downloaded folder: `cd LocationTracking`
+## Use the Shoestring App to download and configure this Solution
+- In the terminal run `shoestring app`, or double click the desktop icon called `Shoestring`.  
+- Use the `Download` button to select the name of this solution. Select the latest release tag.  
+- Follow the prompts to configure
 
-
-## Build
-Set up secret keys and default passwords: `./setup.sh`  
-Build using docker: `docker compose build`
-
-
-## Run
-Run using the `./start.sh` script. 
-
+## Setup, Build & Start
+Continue accepting the prompts to setup, build and start now
 
 ## Configure
 Configure in a web browser at `localhost:8002`. Create locations, define items and associate barcodes.
-
 
 ## Usage
 Use the operator interface in a web browser at `localhost` to move items between locations:  
