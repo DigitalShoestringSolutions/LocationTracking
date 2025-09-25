@@ -8,7 +8,7 @@ In the terminal, run:
 
 ## Use the Shoestring App to download and configure this Solution
 - In the terminal run `shoestring app`, or double click the desktop icon called `Shoestring`.  
-- Use the `Download` button to select the name of this solution. Select the latest release tag.  
+- Use the `Download` button to select the name of this solution (`Job Tracking`). Select the latest release tag.  
 - Follow the prompts to configure
 
 ## Setup, Build & Start
@@ -26,3 +26,9 @@ Or record production operations, which consume one item to make another:
 
 View the dashboard in a web browser at `localhost:8000` to see where items currently are:  
 <img width="1916" height="277" alt="image" src="https://github.com/user-attachments/assets/ddd3daa6-a9b7-4ad9-ae12-1eaa1508a978" />
+
+Items can be either of a 'type', of which a fungible quantity is at a location, or alternatively items can be 'individual' and have a unique reference number and can only be in one place at once.  
+
+## Barcode Scanners
+Barcode scanners attached to the pi can be configured to be associated with a location. When an 'individual' item is scanned, it is moved to the location associated with the barcode scanner.  
+Product types cannot be directly moved via barcode scanners, but instead the barcode scanners could be used with the web forms to reduce typing of product numbers.  
