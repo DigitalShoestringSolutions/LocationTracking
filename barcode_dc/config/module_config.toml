@@ -24,12 +24,12 @@
 
 [[output]]
     name = "scan event"   # only used in logging
-    topic = "location_update/{{location}}"
+    topic = "transfer_operation/{{location}}"
     triggers = ["id"]
     trigger_policy="all"
     #payload.<key>="<variable>"
     payload.item="id"
-    payload.to="location"
+    payload.to_loc="location"
     payload.timestamp="timestamp"
 
 
