@@ -9,7 +9,7 @@ recipe_vsn = "1.0.0"
 
 [source.barcode_scanning]
     git.path = "sm_barcode_dc"
-    git.tag = "v1.0.0"
+    git.tag = "v1.1.0"
 [source.location_sds]
     git.path = "django_relational_db"
     git.tag = "v1.0.0"
