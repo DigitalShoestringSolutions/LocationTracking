@@ -1,7 +1,14 @@
+[Q.enabled]
+  type = "bool"
+  prompt = "Enable barcode scanner"
+
 [Q.location]
   type="text"
   prompt="Choose a location for this barcode scanner"
+  criteria="enabled=true"
 
 [OUT.location_value]
   var = "location"
 
+[OUT.enabled_value]
+  var = "enabled"
