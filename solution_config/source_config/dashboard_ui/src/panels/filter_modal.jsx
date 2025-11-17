@@ -5,7 +5,7 @@ import { useFilter } from "../FilterContext"
 
 export function FilterModal({ show, handleClose }) {
 
-  let { item_filter, setItemFilter } = useFilter()
+  let { item_filter, setItemFilter, default_item_filter } = useFilter()
 
   let [state, setState] = React.useState(item_filter)
 
@@ -22,7 +22,7 @@ export function FilterModal({ show, handleClose }) {
     <Modal.Header>
       <Modal.Title className="w-100"><h4>Filter Shown Items:
         <Button className="ms-1 float-end" variant="primary" onClick={() => do_handle_close(state)}>Save</Button>
-        <Button className="float-end" variant="warning" onClick={() => do_handle_close(undefined)}>Reset</Button>
+        <Button className="float-end" variant="warning" onClick={() => setState(default_item_filter)}>Reset</Button>
       </h4></Modal.Title>
     </Modal.Header>
     <Modal.Body><FilterBody state={state} setState={setState} /></Modal.Body>

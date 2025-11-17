@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework_csv.renderers import CSVRenderer
 import datetime
 import dateutil.parser
+from functools import lru_cache 
 
 from .models import State, TransferEvent, ProductionEvent, ProductionEventInput
 from .serializers import (
@@ -23,17 +24,35 @@ from .serializers import (
     ProductionEventSerializer,
 )
 
+@lru_cache(maxsize=32)
+def search_by_name_query(query):
+    import requests
+
+    response = requests.get(
+        f"http://{settings.ID_SERVICE_URL}/id/by-name", params={"q": query}
+    )
+    if response.status_code == 200:
+        return [entry["id"] for entry in response.json()]
+    else:
+        return []
 
 @api_view(("GET",))
 @renderer_classes((JSONRenderer, BrowsableAPIRenderer, CSVRenderer))
 def getAll(request):
     at = request.GET.get("t", None)
+    query = request.GET.get("q", None)
     q = Q(end__isnull=True) & ~Q(quantity=0)
 
     if at:
         print(f"get all at {at}")
         at_dt = dateutil.parser.isoparse(at)  # parse "at" to datetime
         q = (q | Q(end__gte=at_dt)) & Q(start__lte=at_dt)
+
+    if query:
+        # TODO: implement search across item_id
+        # fetch valid ids matching query
+        valid_ids = search_by_name_query(query)
+        q = q & Q(item_id__in=valid_ids)
     qs = State.objects.filter(q).order_by("-start")
     serializer = StateSerializer(qs, many=True)
     return Response(serializer.data)

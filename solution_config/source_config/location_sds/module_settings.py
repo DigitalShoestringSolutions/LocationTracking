@@ -19,3 +19,5 @@ MQTT = {
 ADMIN_HEADER = "Location Tracking Admin"
 ADMIN_TITLE = "Location Tracking Admin Portal"
 ADMIN_INDEX = "Welcome to Location Tracking Administration Portal"
+
+ID_SERVICE_URL = "identity-sds.docker.local"

@@ -3,6 +3,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 import Container from 'react-bootstrap/Container'
+import Form from 'react-bootstrap/Form'
 import React from 'react';
 import { Dropdown, DropdownButton, InputGroup, Table } from 'react-bootstrap';
 import { PaginateWidget, groupBy, paginate, pivot } from '../table_utils';
@@ -12,7 +13,7 @@ import { useCurrentState } from '../api'
 import { LoadingIndicator } from '../components/loading'
 import { ErrorIndicator } from '../components/error'
 import { ItemName } from '../components/item'
-import { useQueryClient } from'@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useFilter } from '../FilterContext'
 
 const ITEM_ORDERS = {
@@ -45,6 +46,7 @@ export function OverviewPage() {
   const [relative_time, setRelativeTime] = React.useState(true)
   const [order_item, setOrderItem] = React.useState(ITEM_ORDERS.quantity)
   const [show_filter_modal, setShowFilter] = React.useState(false)
+  const { setSearchQuery } = useFilter()
 
   return (
     <Container fluid className="p-0 d-flex flex-column">
@@ -52,6 +54,16 @@ export function OverviewPage() {
         <Card className='my-2'>
           <Card.Header className='d-flex flex-row justify-content-between'>
             <h3 className='flex-shrink-0 flex-grow-1'>Current State: </h3>
+            <InputGroup size="sm" className="flex-grow-1 flex-shrink-1 mx-2" style={{ maxWidth: "30%" }}>
+              <InputGroup.Text>🔎︎</InputGroup.Text>
+              <Form.Control
+                placeholder="Search"
+                onChange={(e) => {
+                  const query = e.target.value.toLowerCase()
+                  setSearchQuery(query)
+                }}
+              />
+            </InputGroup>
             <InputGroup size="sm" className="flex-grow-0 flex-shrink-0 my-0" style={{ width: "max-content" }}>
               <OverlayTrigger placement="bottom" overlay={<Tooltip>Filter shown items</Tooltip>}>
                 <Button variant="outline-secondary" className='bi bi-funnel-fill' onClick={() => setShowFilter(true)}></Button>
@@ -76,15 +88,16 @@ export function OverviewPage() {
           </Card.Body>
         </Card>
       </Container>
-      <FilterModal show={show_filter_modal} handleClose={() => { setShowFilter(false)}} />
+      <FilterModal show={show_filter_modal} handleClose={() => { setShowFilter(false) }} />
     </Container>
   )
 }
 
 function ItemTable({ settings }) {
   let queryClient = useQueryClient()
+  let {search_query} = useFilter()
 
-  let { data: state, isLoading, error } = useCurrentState()
+  let { data: state, isLoading, error } = useCurrentState(search_query)
   const [active_page, setActive] = React.useState(1)
 
   const { filter_function, location_filter } = useFilter()
@@ -96,7 +109,7 @@ function ItemTable({ settings }) {
 
   let shown_state = state.filter(filter_function)
 
-  
+
   let sort_func = {
     [ITEM_ORDERS.alpha]: (a, b) => {
       let a_entry = queryClient.getQueryData(['id', { id: a.item_id }])?.payload

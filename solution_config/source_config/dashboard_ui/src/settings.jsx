@@ -1,4 +1,6 @@
 import React from "react";
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+import Tooltip from 'react-bootstrap/Tooltip'
 import { Button, ButtonGroup, Card, Col, Container, ListGroup, Row } from "react-bootstrap";
 import { useQueryClient } from '@tanstack/react-query'
 import { useIdListForTypes } from "app/api";
@@ -68,6 +70,15 @@ function LocationManager() {
     </Row> */}
     <Row>
       <Col>
+        <h4>Available Locations</h4>
+      </Col>
+      <Col xs={1}></Col>
+      <Col>
+        <h4>Shown Locations</h4>
+      </Col>
+    </Row>
+    <Row>
+      <Col>
         <ListGroup>
           {available.map(elem => (
             <ListGroup.Item
@@ -81,26 +92,6 @@ function LocationManager() {
       <Col xs={1} className="d-flex justify-content-center">
         <ButtonGroup vertical>
           <Button
-            className="bi bi-arrow-left"
-            disabled={select_type !== "shown"}
-            onClick={() => {
-              setChanged(true)
-              setNewShown(prev => {
-                let tmp = [...prev]
-                let index = prev.findIndex(elem => elem.id === selected)
-                if (index !== -1)
-                  tmp.splice(index, 1);
-                return tmp
-              })
-              setAvailable(prev => {
-                let entry = all_locations.find(elem => elem.id === selected)
-                return [entry, ...prev]
-              })
-              setSelectType("available")
-            }}
-          />
-          <Button
-            className="bi bi-arrow-right"
             disabled={select_type !== "available"}
             onClick={() => {
               setChanged(true)
@@ -117,9 +108,10 @@ function LocationManager() {
               })
               setSelectType("shown")
             }}
-          />
+          >
+            Show
+          </Button>
           <Button
-            className="bi bi-arrow-up"
             disabled={select_type !== "shown"}
             onClick={() => {
               setChanged(true)
@@ -133,9 +125,10 @@ function LocationManager() {
               })
             }
             }
-          />
+          >
+            Move up
+          </Button>
           <Button
-            className="bi bi-arrow-down"
             disabled={select_type !== "shown"}
             onClick={() => {
               setChanged(true)
@@ -148,7 +141,29 @@ function LocationManager() {
                 return tmp
               })
             }}
-          />
+          >
+            Move down
+          </Button>
+          <Button
+            disabled={select_type !== "shown"}
+            onClick={() => {
+              setChanged(true)
+              setNewShown(prev => {
+                let tmp = [...prev]
+                let index = prev.findIndex(elem => elem.id === selected)
+                if (index !== -1)
+                  tmp.splice(index, 1);
+                return tmp
+              })
+              setAvailable(prev => {
+                let entry = all_locations.find(elem => elem.id === selected)
+                return [entry, ...prev]
+              })
+              setSelectType("available")
+            }}
+          >
+            Hide
+          </Button>
         </ButtonGroup>
       </Col>
       <Col>
