@@ -23,8 +23,10 @@ from .serializers import (
     ProductionEventInputSerializer,
     ProductionEventSerializer,
 )
+import logging
 
-@lru_cache(maxsize=32)
+logger = logging.getLogger(__name__)
+
 def search_by_name_query(query):
     import requests
 
@@ -49,12 +51,13 @@ def getAll(request):
         q = (q | Q(end__gte=at_dt)) & Q(start__lte=at_dt)
 
     if query:
-        # TODO: implement search across item_id
         # fetch valid ids matching query
         valid_ids = search_by_name_query(query)
+        # logger.info(f"search query '{query}' returned ids: {valid_ids}")
         q = q & Q(item_id__in=valid_ids)
     qs = State.objects.filter(q).order_by("-start")
     serializer = StateSerializer(qs, many=True)
+    # logger.info(f"results: {serializer.data}")
     return Response(serializer.data)
 
 
