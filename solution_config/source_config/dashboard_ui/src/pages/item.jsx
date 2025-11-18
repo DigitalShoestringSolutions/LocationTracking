@@ -1,9 +1,8 @@
-import React from "react";
+import React, { use } from "react";
 import { Button, Card, Container, Dropdown, DropdownButton, Form, InputGroup, Spinner, Table } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 import dayjs from 'dayjs'
 import { PaginateWidget, groupBy, paginate } from "../table_utils";
-import { useQueryClient } from '@tanstack/react-query'
 
 import {
   Chart as ChartJS,
@@ -19,7 +18,7 @@ import {
 import { Line } from 'react-chartjs-2';
 
 import 'chartjs-adapter-dayjs-4/dist/chartjs-adapter-dayjs-4.esm';
-import { useHistoryFor, useItem, useStateAt } from "../api";
+import { useHistoryFor, useItem, useStateAt, useBulkItem } from "../api";
 import { ItemName } from "../components/item";
 import { LoadingIndicator } from "../components/loading";
 import { ErrorIndicator } from "../components/error";
@@ -178,6 +177,8 @@ function CollectionItem({ item }) {
 
   let { location_filter } = useFilter()
 
+  let { isLoading: locationsLoading, data: location_details } = useBulkItem(location_filter)
+
   const periods = {
     'day': {
       unit: 'hour',
@@ -202,8 +203,6 @@ function CollectionItem({ item }) {
   let [show_day, setShowDay] = React.useState(dayjs())
   let [period, setPeriod] = React.useState(Object.keys(periods)[0])
 
-  let queryClient = useQueryClient()
-
   let now = dayjs()
   let start_period = show_day.startOf(period)
   let next_period = show_day.add(1, period).startOf(period)
@@ -211,7 +210,7 @@ function CollectionItem({ item }) {
 
   let { data: item_history, isLoading, error } = useHistoryFor(item.id, start_period, end_period)
 
-  if (isLoading)
+  if (isLoading || locationsLoading)
     return <LoadingIndicator />
 
   if (error)
@@ -254,7 +253,7 @@ function CollectionItem({ item }) {
   let filtered_data = location_filter.reduce((acc, key) => { if (raw_data[key]) acc[key] = raw_data[key]; return acc }, {})
   console.log(filtered_data, raw_data, location_filter)
   let datasets = Object.keys(filtered_data).map(loc_id => ({
-    label: queryClient.getQueryData(['id', { id: loc_id }])?.payload?.name,
+    label: location_details[loc_id]?.name,
     data: filtered_data[loc_id].reduce((acc, elem) => {
       acc.unshift({ y: elem.quantity, x: elem.end ? elem.end : end_period.toISOString() })
       acc.unshift({ y: elem.quantity, x: dayjs(elem.start) < start_period ? start_period.toISOString() : elem.start })

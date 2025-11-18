@@ -1,5 +1,6 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useQueries } from "@tanstack/react-query"
 import APIBackend from 'core/RestAPI'
+import React from "react";
 
 class APIException extends Error {
     constructor(message, code = code, payload = undefined, name = "PayloadError") {
@@ -40,15 +41,40 @@ export function useStateAt(id) {
     )
 }
 
-export function useCurrentState() {
+export function useCurrentState(search_query = "") {
     let { data: config } = useConfig()
+
+    const searchParams = new URLSearchParams();
+    if (search_query) {
+        searchParams.append("q", encodeURIComponent(search_query))
+    }
+    let search_string = searchParams.size > 0 ? "?" + searchParams.toString() : "" 
     return useQuery(
         {
-            queryKey: ['state'],
-            queryFn: async () => APIBackend.api_get('http://' + get_db_url(config) + '/state/'),
+            queryKey: ['state',{ search: search_query }],
+            queryFn: async () => APIBackend.api_get('http://' + get_db_url(config) + '/state/' + search_string),
             select: (data) => (data.payload)
         }
     )
+}
+
+export function useBulkItem(id_list) {
+    let { data: config } = useConfig()
+    const empty_results = id_list.reduce((acc, id) => ({ ...acc, [id]: undefined }), {})
+    return useQueries({
+        queries: id_list.map((id) => ({
+            queryKey: ['id', { id: id }],
+            queryFn: async () => APIBackend.api_get('http://' + get_id_url(config) + '/id/' + id),
+            select: (data) => (data.payload)
+        })),
+        combine: React.useCallback((results) => {
+            let complete_results = results.reduce((acc, result) => ({ ...acc, [result?.data?.id]: result.data }), { ...empty_results})
+            return {
+                data: complete_results,
+                pending: results.some((result) => result.isPending),
+            }
+        })
+    })
 }
 
 export function useItem(id) {
@@ -91,7 +117,7 @@ export function useIdListForTypes(type_list) {
             queryKey: ['id_list_for_types', { types: type_list }],
             queryFn: async () => APIBackend.api_get('http://' + get_id_url(config) + '/id/list' + search_string),
             select: (data) => (data.payload),
-            enabled: type_list.length>0
+            enabled: type_list.length > 0
         }
     )
 }

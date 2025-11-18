@@ -16,6 +16,8 @@ export function useFilter() {
 export const FilterProvider = ({ children, config }) => {
   let [item_filter, setItemFilter] = React.useState({}) // map of <type>:bool or <type>:[<id>] 
   let [location_filter, setLocationFilter] = React.useState([]) // list of location ids
+  let [search_query, setSearchQuery] = React.useState("")
+  let [default_item_filter, setDefaultItemFilter] = React.useState({})
 
   let [location_types, setLocationTypes] = React.useState([])
   let { data: location_ids } = useIdListForTypes(location_types)
@@ -27,10 +29,11 @@ export const FilterProvider = ({ children, config }) => {
     let config_valid_item_types = config?.items?.defaults
     // create default filter
     let default_item_filter = config_valid_item_types.reduce((obj, elem) => { obj[elem] = true; return obj }, {})
+    setDefaultItemFilter(default_item_filter)
     // load prior filter value from browser storage
     let raw_storage_item_filter = localStorage.getItem('item_filter')
     // load existing filter if present else use default
-    if (raw_storage_item_filter){
+    if (raw_storage_item_filter) {
       let storage_item_filter = JSON.parse(raw_storage_item_filter)
       setItemFilter(storage_item_filter)
       console.log("Item filter loaded from storage: ", storage_item_filter)
@@ -49,8 +52,8 @@ export const FilterProvider = ({ children, config }) => {
       let storage_location_filter = JSON.parse(raw_storage_location_filter)
       if (storage_location_filter instanceof Array)
         setLocationFilter(storage_location_filter)
-        console.log("Location filter loaded from storage: ",storage_location_filter)
-    } 
+      console.log("Location filter loaded from storage: ", storage_location_filter)
+    }
     setLocationTypes(config_valid_location_types) // triggers useIdListForTypes
 
   }, [config]) //run once on mount
@@ -65,8 +68,8 @@ export const FilterProvider = ({ children, config }) => {
 
   const setLocationFilterWrapper = (new_location_filter) => {
     setLocationFilter(new_location_filter)
-    if (new_location_filter != undefined){
-      localStorage.setItem("shown_locations",JSON.stringify(new_location_filter))
+    if (new_location_filter != undefined) {
+      localStorage.setItem("shown_locations", JSON.stringify(new_location_filter))
     } else {
       localStorage.clear("shown_locations")
     }
@@ -99,6 +102,10 @@ export const FilterProvider = ({ children, config }) => {
       setItemFilter: setItemFilterWrapper,
       location_filter: location_filter,
       setLocationFilter: setLocationFilterWrapper,
+      search_query: search_query,
+      setSearchQuery: setSearchQuery,
+
+      default_item_filter: default_item_filter,
 
       filter_function: filter_function,
     }}>

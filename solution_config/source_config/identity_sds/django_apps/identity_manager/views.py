@@ -55,6 +55,15 @@ def identify(request,identifier_type,identifier):
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
+def searchNames(request):
+    query = request.GET.get("q",None)
+
+    qs = IdentityEntry.objects.filter(name__icontains=query)
+    serializer = IdentitySerializer(qs,many=True)
+    return Response(serializer.data)
+
+@api_view(('GET',))
+@renderer_classes((JSONRenderer,BrowsableAPIRenderer))
 def getID(request,id=None):
     if id is not None:
         *id_type, id_num = id.split("@")
