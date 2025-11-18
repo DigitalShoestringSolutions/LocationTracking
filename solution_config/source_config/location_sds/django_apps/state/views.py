@@ -27,6 +27,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#@lru_cache(maxsize=32)  # beware adding a cache like this can cause recently created items to not be found by search!
 def search_by_name_query(query):
     import requests
 
