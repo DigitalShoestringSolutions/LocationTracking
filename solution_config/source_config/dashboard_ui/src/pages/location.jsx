@@ -10,6 +10,8 @@ import { useEventsAt, useItem, useStateAt } from '../api';
 import { LoadingIndicator } from '../components/loading';
 import { ErrorIndicator } from '../components/error';
 import { ItemName } from '../components/item';
+import { useFilter } from '../FilterContext';
+import { PageSizeSelector } from '../components/page_size'
 
 
 export function LocationPage() {
@@ -18,7 +20,7 @@ export function LocationPage() {
   const current_location_id = params.location_id
 
   let { data: current_location, isLoading, error } = useItem(current_location_id)
-  const [page_size, setPageSize] = React.useState(10)
+  const {page_size} = useFilter()
 
   if (isLoading)
     return <LoadingIndicator />
@@ -30,13 +32,7 @@ export function LocationPage() {
       <div className='d-flex flex-row justify-content-between'>
         <h1 className='flex-shrink-0 flex-grow-1'>{current_location.name}:</h1>
         <InputGroup className="flex-grow-0 flex-shrink-0 my-2" style={{ width: "max-content" }}>
-          <DropdownButton variant="outline-secondary" title={"Show: " + page_size} size="sm" value={page_size}>
-            <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
-            <Dropdown.Divider />
-            {[10, 15, 25, 50].map(elem => (
-              <Dropdown.Item key={elem} value={elem} onClick={() => setPageSize(elem)}>{elem}</Dropdown.Item>
-            ))}
-          </DropdownButton>
+          <PageSizeSelector />
         </InputGroup>
       </div>
       <Row>

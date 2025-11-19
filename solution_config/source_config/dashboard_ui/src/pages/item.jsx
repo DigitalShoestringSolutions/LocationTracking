@@ -24,6 +24,8 @@ import { LoadingIndicator } from "../components/loading";
 import { ErrorIndicator } from "../components/error";
 import { useFilter } from "../FilterContext";
 
+import { PageSizeSelector } from '../components/page_size'
+
 ChartJS.register(
   TimeScale,
   LinearScale,
@@ -63,7 +65,7 @@ export function ItemPage() {
 
 function IndividualItem({ item }) {
   const [active_page, setActive] = React.useState(1)
-  const [page_size, setPageSize] = React.useState(15)
+  const {page_size} = useFilter()
 
   let { data: item_history, isLoading, error } = useHistoryFor(item.id)
 
@@ -82,13 +84,7 @@ function IndividualItem({ item }) {
     <Card.Header className='d-flex flex-row justify-content-between'>
       <h4 className='flex-shrink-0 flex-grow-1'>Location History for: {item.name}</h4>
       <InputGroup className="flex-grow-0 flex-shrink-0 my-2" style={{ width: "max-content" }}>
-        <DropdownButton variant="outline-secondary" title={"Show: " + page_size} size="sm" value={page_size}>
-          <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
-          <Dropdown.Divider />
-          {[15, 25, 50].map(elem => (
-            <Dropdown.Item key={elem} value={elem} onClick={() => setPageSize(elem)}>{elem}</Dropdown.Item>
-          ))}
-        </DropdownButton>
+        <PageSizeSelector />
       </InputGroup>
     </Card.Header>
     <Card.Body className="p-0">
