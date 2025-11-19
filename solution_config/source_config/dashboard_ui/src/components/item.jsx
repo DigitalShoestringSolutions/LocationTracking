@@ -1,8 +1,12 @@
 import { useItem } from "../api"
 import { NavLink } from "react-router-dom";
+import { useFilter } from "../FilterContext";
 
 export function ItemName({ id, link_if_collective = true, link_if_individual = true, link = true, show_icon = true }) {
     let { data: item, isLoading, error } = useItem(id)
+    let { show_icons: global_show_icons } = useFilter()
+
+    const do_show_icon = global_show_icons && show_icon
 
     if (id == undefined)
         return ""
@@ -26,8 +30,8 @@ export function ItemName({ id, link_if_collective = true, link_if_individual = t
     }
 
     if (link && ((link_if_collective && !item.individual) || (link_if_individual && item.individual))) {
-        return <NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={slug + id} > {show_icon && icon}{item.name}</NavLink>
+        return <NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={slug + id} > {do_show_icon && icon}{item.name}</NavLink>
     } else {
-        return <span>{show_icon && icon}{item.name}</span>
+        return <span>{do_show_icon && icon}{item.name}</span>
     }
 }

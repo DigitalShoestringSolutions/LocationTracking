@@ -1,6 +1,7 @@
 import React from "react";
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
+import Form from 'react-bootstrap/Form'
 import { Button, ButtonGroup, Card, Col, Container, ListGroup, Row } from "react-bootstrap";
 import { useQueryClient } from '@tanstack/react-query'
 import { useIdListForTypes } from "app/api";
@@ -18,6 +19,7 @@ export function SettingsPage() {
               <Card.Body>
                 <LocationManager />
                 <ClearCache />
+                <ShowIcons />
               </Card.Body>
             </Card>
           </Col>
@@ -187,5 +189,16 @@ function ClearCache() {
 
   return <Row className="py-2">
     <h4>Item Name Cache {done ? " (Empty)" : ""}  <Button className="float-end" variant="warning" disabled={done} onClick={() => { queryClient.clear(); setDone(true) }}>Clear</Button></h4>
+  </Row>
+}
+
+function ShowIcons() {
+  let { show_icons, setShowIcons } = useFilter()
+
+  return <Row className="py-2">
+    <h4 className="d-flex justify-content-between align-items-center">
+      <span>Show Item Icons</span>
+      <Form.Check // prettier-ignore
+        type="switch" checked={show_icons} onChange={(event) => { setShowIcons(event.target.checked) }} /></h4>
   </Row>
 }
