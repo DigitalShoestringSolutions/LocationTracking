@@ -3,13 +3,14 @@ import Button from 'react-bootstrap/Button'
 import Card from 'react-bootstrap/Card'
 import Col from 'react-bootstrap/Col'
 import Row from 'react-bootstrap/Row'
+import Form from 'react-bootstrap/Form'
 import Container from 'react-bootstrap/Container'
 import { useMQTTControl, useMQTTDispatch } from 'core/context/mqtt'
 import React from 'react';
 import { add_toast, useToastDispatch } from 'core/context/toast'
 import { useParams } from 'react-router-dom'
 import { useBarcodeDetails, useLocationList } from 'app/api';
-import {BarcodeEntry, DisplayItem,SelectLocation,SetQuantity} from './common'
+import { BarcodeEntry, DisplayItem, SelectLocation, SetQuantity } from './common'
 
 
 
@@ -30,6 +31,7 @@ export function TransferOperation() {
     let [barcode_buffer, setBarcodeBuffer] = React.useState("")
     let [barcode, setBarcode] = React.useState("")
     let [item_error, setItemError] = React.useState(undefined)
+    let [autoSubmit, setAutoSubmit] = React.useState(false)
 
     let [quantity, setQuantity] = React.useState("")
     let [to, setTo] = React.useState("")
@@ -74,6 +76,9 @@ export function TransferOperation() {
             } else {
                 if (submitRef?.current)
                     submitRef.current.focus()
+                if (autoSubmit) {
+                    submitRef.current.click()
+                }
             }
         }
     }, [current_item, from, to])
@@ -114,7 +119,17 @@ export function TransferOperation() {
                 <Col>
                     {/* <CurrentStatus /> */}
                     <Card className='my-2'>
-                        <Card.Header><h4>Transfer Items:</h4></Card.Header>
+                        <Card.Header>
+                            <div className='d-flex justify-content-between align-items-center'>
+                                <h4>Transfer Items:</h4>
+                                <Form.Check
+                                    type="switch"
+                                    label="Auto Submit"
+                                    checked={autoSubmit}
+                                    onChange={(e) => setAutoSubmit(e.target.checked)}
+                                />
+                            </div>
+                        </Card.Header>
                         <Card.Body>
                             <BarcodeEntry barcode={barcode_buffer} setBarcode={setBarcodeBuffer} submit={handle_barcode_submit} barcodeRef={barcodeRef} />
                             <DisplayItem item={current_item} pending={barcode_loading} error={item_error} />
