@@ -22,6 +22,8 @@ export const FilterProvider = ({ children, config }) => {
   let [show_icons, setShowIcons] = React.useState(true)
   let [location_types, setLocationTypes] = React.useState([])
   let { data: location_ids } = useIdListForTypes(location_types)
+  
+  const [page_size, setPageSize] = React.useState(10)
 
   React.useEffect(() => {
     //// Item filter
@@ -66,6 +68,16 @@ export const FilterProvider = ({ children, config }) => {
     } else {
       setShowIcons(true)
       console.log("Default show icons used: true")
+      
+    //// Page size
+    let raw_storage_page_size = localStorage.getItem('page_size')
+    if (raw_storage_page_size) {
+      let storage_page_size = JSON.parse(raw_storage_page_size)
+      setPageSize(storage_page_size)
+      console.log("Page size loaded from storage: ", storage_page_size)
+    } else {
+      setPageSize(10)
+      console.log("Default page size used: 10")
     }
 
   }, [config]) //run once on mount
@@ -102,6 +114,13 @@ export const FilterProvider = ({ children, config }) => {
       localStorage.setItem("show_icons", JSON.stringify(new_show_icons))
     } else {
       localStorage.clear("show_icons")
+      
+  const setPageSizeWrapper = (new_page_size) => {
+    setPageSize(new_page_size)
+    if (new_page_size != undefined) {
+      localStorage.setItem("page_size", JSON.stringify(new_page_size))
+    } else {
+      localStorage.clear("page_size")
     }
   }
 
@@ -131,6 +150,9 @@ export const FilterProvider = ({ children, config }) => {
       filter_function: filter_function,
       show_icons: show_icons,
       setShowIcons: setShowIconsWrapper,
+
+      page_size: page_size,
+      setPageSize: setPageSizeWrapper,
     }}>
       {children}
     </FilterContext.Provider>

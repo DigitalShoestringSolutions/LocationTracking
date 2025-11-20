@@ -2,7 +2,7 @@ import { useItem } from "../api"
 import { NavLink } from "react-router-dom";
 import { useFilter } from "../FilterContext";
 
-export function ItemName({ id, link_if_collective = true, link_if_individual = true, link = true, show_icon = true }) {
+export function ItemName({ id, link_if_collective = true, link_if_individual = true, link = true, show_icon = true, quantity = undefined }) {
     let { data: item, isLoading, error } = useItem(id)
     let { show_icons: global_show_icons } = useFilter()
 
@@ -29,9 +29,14 @@ export function ItemName({ id, link_if_collective = true, link_if_individual = t
         }
     }
 
+    let quantity_entry = ""
+    if (quantity !== undefined) {
+        quantity_entry = <span className="badge bg-secondary ms-1">{quantity}</span>
+    }
+
     if (link && ((link_if_collective && !item.individual) || (link_if_individual && item.individual))) {
-        return <NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={slug + id} > {do_show_icon && icon}{item.name}</NavLink>
+        return <div className="d-flex justify-content-between align-items-center"><NavLink className="link-primary link-underline link-underline-opacity-0 link-underline-opacity-75-hover" to={slug + id} >{do_show_icon && icon}{item.name}</NavLink>{quantity_entry}</div>
     } else {
-        return <span>{do_show_icon && icon}{item.name}</span>
+        return <span>{do_show_icon && icon}{item.name}{quantity_entry}</span>
     }
 }
