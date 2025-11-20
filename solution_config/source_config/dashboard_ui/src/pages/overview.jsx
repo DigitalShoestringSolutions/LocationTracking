@@ -15,6 +15,7 @@ import { ErrorIndicator } from '../components/error'
 import { ItemName } from '../components/item'
 import { useQueryClient } from '@tanstack/react-query'
 import { useFilter } from '../FilterContext'
+import { PageSizeSelector } from '../components/page_size'
 
 const ITEM_ORDERS = {
   alpha: "alpha",
@@ -42,7 +43,7 @@ const ITEM_ICONS = {
 
 export function OverviewPage() {
 
-  const [page_size, setPageSize] = React.useState(10)
+  let { page_size } = useFilter()
   const [relative_time, setRelativeTime] = React.useState(true)
   const [order_item, setOrderItem] = React.useState(ITEM_ORDERS.quantity)
   const [show_filter_modal, setShowFilter] = React.useState(false)
@@ -74,13 +75,7 @@ export function OverviewPage() {
               <OverlayTrigger placement="bottom" overlay={<Tooltip>Item order: {ITEM_TOOLTIPS[order_item]}</Tooltip>}>
                 <Button variant="outline-secondary" className={'bi bi-' + (ITEM_ICONS[order_item] ?? "question-lg")} onClick={() => setOrderItem(prev => ITEM_ORDERS_NEXT[prev])} />
               </OverlayTrigger>
-              <DropdownButton variant="outline-secondary" title={"Shown: " + page_size} size="sm" value={page_size}>
-                <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
-                <Dropdown.Divider />
-                {[10, 15, 25, 50].map(elem => (
-                  <Dropdown.Item key={elem} value={elem} onClick={() => setPageSize(elem)}>{elem}</Dropdown.Item>
-                ))}
-              </DropdownButton>
+              <PageSizeSelector />
             </InputGroup>
           </Card.Header>
           <Card.Body className='p-0'>
@@ -95,7 +90,7 @@ export function OverviewPage() {
 
 function ItemTable({ settings }) {
   let queryClient = useQueryClient()
-  let {search_query} = useFilter()
+  let { search_query } = useFilter()
 
   let { data: state, isLoading, error } = useCurrentState(search_query)
   const [active_page, setActive] = React.useState(1)

@@ -21,6 +21,8 @@ export const FilterProvider = ({ children, config }) => {
 
   let [location_types, setLocationTypes] = React.useState([])
   let { data: location_ids } = useIdListForTypes(location_types)
+  
+  const [page_size, setPageSize] = React.useState(10)
 
   React.useEffect(() => {
     //// Item filter
@@ -56,6 +58,17 @@ export const FilterProvider = ({ children, config }) => {
     }
     setLocationTypes(config_valid_location_types) // triggers useIdListForTypes
 
+    //// Page size
+    let raw_storage_page_size = localStorage.getItem('page_size')
+    if (raw_storage_page_size) {
+      let storage_page_size = JSON.parse(raw_storage_page_size)
+      setPageSize(storage_page_size)
+      console.log("Page size loaded from storage: ", storage_page_size)
+    } else {
+      setPageSize(10)
+      console.log("Default page size used: 10")
+    }
+
   }, [config]) //run once on mount
 
   React.useEffect(() => {
@@ -84,6 +97,15 @@ export const FilterProvider = ({ children, config }) => {
     }
   }
 
+  const setPageSizeWrapper = (new_page_size) => {
+    setPageSize(new_page_size)
+    if (new_page_size != undefined) {
+      localStorage.setItem("page_size", JSON.stringify(new_page_size))
+    } else {
+      localStorage.clear("page_size")
+    }
+  }
+
   const filter_function = (elem) => {
     let type_tag = elem.item_id.split('@')[0]
     let filter_entry = item_filter[type_tag]
@@ -108,6 +130,9 @@ export const FilterProvider = ({ children, config }) => {
       default_item_filter: default_item_filter,
 
       filter_function: filter_function,
+
+      page_size: page_size,
+      setPageSize: setPageSizeWrapper,
     }}>
       {children}
     </FilterContext.Provider>
