@@ -22,7 +22,7 @@ export const FilterProvider = ({ children, config }) => {
   let [show_icons, setShowIcons] = React.useState(true)
   let [location_types, setLocationTypes] = React.useState([])
   let { data: location_ids } = useIdListForTypes(location_types)
-  
+
   const [page_size, setPageSize] = React.useState(10)
 
   React.useEffect(() => {
@@ -68,7 +68,7 @@ export const FilterProvider = ({ children, config }) => {
     } else {
       setShowIcons(true)
       console.log("Default show icons used: true")
-      
+    }
     //// Page size
     let raw_storage_page_size = localStorage.getItem('page_size')
     if (raw_storage_page_size) {
@@ -114,47 +114,47 @@ export const FilterProvider = ({ children, config }) => {
       localStorage.setItem("show_icons", JSON.stringify(new_show_icons))
     } else {
       localStorage.clear("show_icons")
-      
-  const setPageSizeWrapper = (new_page_size) => {
-    setPageSize(new_page_size)
-    if (new_page_size != undefined) {
-      localStorage.setItem("page_size", JSON.stringify(new_page_size))
-    } else {
-      localStorage.clear("page_size")
-    }
-  }
 
-  const filter_function = (elem) => {
-    let type_tag = elem.item_id.split('@')[0]
-    let filter_entry = item_filter[type_tag]
-    if (filter_entry === true)
-      return location_filter.indexOf(elem.location_link) >= 0
-    if (Array.isArray(filter_entry))
-      return (location_filter.indexOf(elem.location_link) >= 0) && (filter_entry.indexOf(elem.item_id) >= 0)
-    return false
-  }
+      const setPageSizeWrapper = (new_page_size) => {
+        setPageSize(new_page_size)
+        if (new_page_size != undefined) {
+          localStorage.setItem("page_size", JSON.stringify(new_page_size))
+        } else {
+          localStorage.clear("page_size")
+        }
+      }
 
-  return (
-    <FilterContext.Provider value={{
-      location_types: location_types,
+      const filter_function = (elem) => {
+        let type_tag = elem.item_id.split('@')[0]
+        let filter_entry = item_filter[type_tag]
+        if (filter_entry === true)
+          return location_filter.indexOf(elem.location_link) >= 0
+        if (Array.isArray(filter_entry))
+          return (location_filter.indexOf(elem.location_link) >= 0) && (filter_entry.indexOf(elem.item_id) >= 0)
+        return false
+      }
 
-      item_filter: item_filter,
-      setItemFilter: setItemFilterWrapper,
-      location_filter: location_filter,
-      setLocationFilter: setLocationFilterWrapper,
-      search_query: search_query,
-      setSearchQuery: setSearchQuery,
+      return (
+        <FilterContext.Provider value={{
+          location_types: location_types,
 
-      default_item_filter: default_item_filter,
+          item_filter: item_filter,
+          setItemFilter: setItemFilterWrapper,
+          location_filter: location_filter,
+          setLocationFilter: setLocationFilterWrapper,
+          search_query: search_query,
+          setSearchQuery: setSearchQuery,
 
-      filter_function: filter_function,
-      show_icons: show_icons,
-      setShowIcons: setShowIconsWrapper,
+          default_item_filter: default_item_filter,
 
-      page_size: page_size,
-      setPageSize: setPageSizeWrapper,
-    }}>
-      {children}
-    </FilterContext.Provider>
-  );
-};
+          filter_function: filter_function,
+          show_icons: show_icons,
+          setShowIcons: setShowIconsWrapper,
+
+          page_size: page_size,
+          setPageSize: setPageSizeWrapper,
+        }}>
+          {children}
+        </FilterContext.Provider>
+      );
+    };
