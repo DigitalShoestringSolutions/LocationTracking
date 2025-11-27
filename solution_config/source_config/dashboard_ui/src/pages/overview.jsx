@@ -19,26 +19,38 @@ import { PageSizeSelector } from '../components/page_size'
 
 const ITEM_ORDERS = {
   alpha: "alpha",
+  r_alpha: "r_alpha",
   quantity: "quantity",
-  time: "time"
+  r_quantity: "r_quantity",
+  time: "time",
+  r_time: "r_time"
 }
 
 const ITEM_TOOLTIPS = {
   alpha: "alphabetical",
+  r_alpha: "reverse alphabetical",
   quantity: "quantity",
-  time: "recent first"
+  r_quantity: "reverse quantity",
+  time: "recent first",
+  r_time: "oldest first"
 }
 
 const ITEM_ORDERS_NEXT = {
-  alpha: "quantity",
-  quantity: "time",
-  time: "alpha"
+  alpha: "r_alpha",
+  r_alpha: "quantity",
+  quantity: "r_quantity",
+  r_quantity: "time",
+  time: "r_time",
+  r_time: "alpha"
 }
 
 const ITEM_ICONS = {
   alpha: "sort-alpha-down",
+  r_alpha: "sort-alpha-up",
   quantity: "sort-numeric-down-alt",
-  time: "stopwatch"
+  r_quantity: "sort-numeric-up-alt",
+  time: "stopwatch",
+  r_time: "clock-history"
 }
 
 export function OverviewPage() {
@@ -88,6 +100,23 @@ export function OverviewPage() {
   )
 }
 
+function sort_alpha(a, b, queryClient) {
+  let a_entry = queryClient.getQueryData(['id', { id: a.item_id }])?.payload
+  let b_entry = queryClient.getQueryData(['id', { id: b.item_id }])?.payload
+  if (a_entry?.name?.toLowerCase() > b_entry?.name?.toLowerCase())
+    return 1
+  else
+    return -1
+}
+
+function sort_numeric(a, b) {
+  if (a.quantity === undefined || a.quantity === null)
+    return 1
+  if (b.quantity === undefined || b.quantity === null)
+    return -1
+  return (b.quantity - a.quantity)
+}
+
 function ItemTable({ settings }) {
   let queryClient = useQueryClient()
   let { search_query } = useFilter()
@@ -106,18 +135,16 @@ function ItemTable({ settings }) {
 
 
   let sort_func = {
-    [ITEM_ORDERS.alpha]: (a, b) => {
-      let a_entry = queryClient.getQueryData(['id', { id: a.item_id }])?.payload
-      let b_entry = queryClient.getQueryData(['id', { id: b.item_id }])?.payload
-      if (a_entry?.name > b_entry?.name)
-        return 1
-      else
-        return -1
-    },
-    [ITEM_ORDERS.quantity]: (a, b) => (b.quantity - a.quantity),
-    [ITEM_ORDERS.time]: (a, b) => (b.start - a.start),
+    [ITEM_ORDERS.alpha]: (a, b) => sort_alpha(a, b, queryClient),
+    [ITEM_ORDERS.r_alpha]: (a, b) => sort_alpha(b, a, queryClient),
+    [ITEM_ORDERS.quantity]: (a, b) => sort_numeric(a, b),
+    [ITEM_ORDERS.r_quantity]: (a, b) => sort_numeric(b, a),
+    [ITEM_ORDERS.time]: (a, b) => sort_numeric(a, b),
+    [ITEM_ORDERS.r_time]: (a, b) => sort_numeric(b, a),
   }[settings.order_item] ?? undefined
   let sorted_state = shown_state
+
+  console.error(settings.order_item, sort_func)
 
   if (sort_func)
     sorted_state = shown_state.sort(sort_func)
@@ -138,7 +165,7 @@ function ItemTable({ settings }) {
           {location_filter.map(loc_id => (
             <th key={loc_id} colSpan={2}>
               <h3>
-                <ItemName id={loc_id} show_icon={false} quantity={grouped_state[loc_id].length}/>
+                <ItemName id={loc_id} show_icon={false} quantity={grouped_state[loc_id].length} />
               </h3>
             </th>
           ))}
