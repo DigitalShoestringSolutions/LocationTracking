@@ -114,47 +114,49 @@ export const FilterProvider = ({ children, config }) => {
       localStorage.setItem("show_icons", JSON.stringify(new_show_icons))
     } else {
       localStorage.clear("show_icons")
+    }
+  }
 
-      const setPageSizeWrapper = (new_page_size) => {
-        setPageSize(new_page_size)
-        if (new_page_size != undefined) {
-          localStorage.setItem("page_size", JSON.stringify(new_page_size))
-        } else {
-          localStorage.clear("page_size")
-        }
-      }
+  const setPageSizeWrapper = (new_page_size) => {
+    setPageSize(new_page_size)
+    if (new_page_size != undefined) {
+      localStorage.setItem("page_size", JSON.stringify(new_page_size))
+    } else {
+      localStorage.clear("page_size")
+    }
+  }
 
-      const filter_function = (elem) => {
-        let type_tag = elem.item_id.split('@')[0]
-        let filter_entry = item_filter[type_tag]
-        if (filter_entry === true)
-          return location_filter.indexOf(elem.location_link) >= 0
-        if (Array.isArray(filter_entry))
-          return (location_filter.indexOf(elem.location_link) >= 0) && (filter_entry.indexOf(elem.item_id) >= 0)
-        return false
-      }
+  const filter_function = (elem) => {
+    let type_tag = elem.item_id.split('@')[0]
+    let filter_entry = item_filter[type_tag]
+    if (filter_entry === true)
+      return location_filter.indexOf(elem.location_link) >= 0
+    if (Array.isArray(filter_entry))
+      return (location_filter.indexOf(elem.location_link) >= 0) && (filter_entry.indexOf(elem.item_id) >= 0)
+    return false
+  }
 
-      return (
-        <FilterContext.Provider value={{
-          location_types: location_types,
+  return (
+    <FilterContext.Provider value={{
+      location_types: location_types,
 
-          item_filter: item_filter,
-          setItemFilter: setItemFilterWrapper,
-          location_filter: location_filter,
-          setLocationFilter: setLocationFilterWrapper,
-          search_query: search_query,
-          setSearchQuery: setSearchQuery,
+      item_filter: item_filter,
+      setItemFilter: setItemFilterWrapper,
+      location_filter: location_filter,
+      setLocationFilter: setLocationFilterWrapper,
+      search_query: search_query,
+      setSearchQuery: setSearchQuery,
 
-          default_item_filter: default_item_filter,
+      default_item_filter: default_item_filter,
 
-          filter_function: filter_function,
-          show_icons: show_icons,
-          setShowIcons: setShowIconsWrapper,
+      filter_function: filter_function,
+      show_icons: show_icons,
+      setShowIcons: setShowIconsWrapper,
 
-          page_size: page_size,
-          setPageSize: setPageSizeWrapper,
-        }}>
-          {children}
-        </FilterContext.Provider>
-      );
-    };
+      page_size: page_size,
+      setPageSize: setPageSizeWrapper,
+    }}>
+      {children}
+    </FilterContext.Provider>
+  );
+}
