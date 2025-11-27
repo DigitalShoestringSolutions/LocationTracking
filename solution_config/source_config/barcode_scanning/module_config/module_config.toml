@@ -1,5 +1,4 @@
 [variable.barcode]
-    name="id"
     type="single"
     # Horribly complicated regex that will match any barcode but exclude leading and trailing whitespace while still allowing whitespace in the middle
     pattern='\s*(.*(?<=[\S]))\s*'
