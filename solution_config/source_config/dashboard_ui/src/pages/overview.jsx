@@ -165,7 +165,7 @@ function ItemTable({ settings }) {
           {location_filter.map(loc_id => (
             <th key={loc_id} colSpan={2}>
               <h3>
-                <ItemName id={loc_id} show_icon={false} quantity={grouped_state[loc_id].length} />
+                <ItemName id={loc_id} show_icon={false} quantity={(grouped_state[loc_id]??[]).length} />
               </h3>
             </th>
           ))}
