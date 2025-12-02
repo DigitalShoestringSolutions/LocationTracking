@@ -198,6 +198,7 @@ function DisplayEntry({ entry, settings }) {
     if (settings?.relative_time)
       return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</div>
     else
-      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:MM")}</div>
+      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:mm")}</div>
   }
+
 }
