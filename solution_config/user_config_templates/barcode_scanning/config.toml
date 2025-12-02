@@ -3,9 +3,3 @@ module_enabled = true
 {% else %}
 module_enabled = false
 {% endif %}
-
-
-[variable.location]
-    name="location"
-    type="static"
-    value="{{location_value}}"

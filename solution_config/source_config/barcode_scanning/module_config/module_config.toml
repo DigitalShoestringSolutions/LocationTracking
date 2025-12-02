@@ -15,12 +15,12 @@
 
 [[output]]
     name = "scan event"   # only used in logging
-    topic = "transfer_operation/{{location}}"
+    topic = "transfer_operation/{{location_id}}"
     triggers = ["id"]
     trigger_policy="all"
     #payload.<key>="<variable>"
     payload.item="id"
-    payload.to_loc="location"
+    payload.to_loc="location_id"
     payload.timestamp="timestamp"
 
 
