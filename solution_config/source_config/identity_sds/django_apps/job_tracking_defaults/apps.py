@@ -34,24 +34,13 @@ def create_defaults(sender, **kwargs):
         IdentityEntry.objects.create(auto_id=3, name="Location 3", type=location_idtype)
         IdentityEntry.objects.create(auto_id=4, name="Complete", type=location_idtype)
 
-    if product_type_created:
-        IdentifierPattern.objects.get_or_create(
-            identifier_type=barcode_identifier_type,
-            id_type= product_type_idtype,
-            defaults={
-                "pattern": "%(?P<name>.*)",
-                "defaults": {"description": ""},
-                "label": "Auto generated default mapping for barcodes to ids for product types",
-            },
-        )
-
     if product_indv_created:
         IdentifierPattern.objects.get_or_create(
             identifier_type=barcode_identifier_type,
             id_type=product_indv_idtype,
             defaults={
-                "pattern": "#(?P<name>.*)",
+                "pattern": "(?P<name>.*)",
                 "defaults": {"description": ""},
-                "label": "Auto generated default mapping for barcodes to ids for individual products",
+                "label": "Unrecognised barcodes become individual products",
             },
         )
