@@ -15,34 +15,47 @@ import { ErrorIndicator } from '../components/error'
 import { ItemName } from '../components/item'
 import { useQueryClient } from '@tanstack/react-query'
 import { useFilter } from '../FilterContext'
+import { PageSizeSelector } from '../components/page_size'
 
 const ITEM_ORDERS = {
   alpha: "alpha",
+  r_alpha: "r_alpha",
   quantity: "quantity",
-  time: "time"
+  r_quantity: "r_quantity",
+  time: "time",
+  r_time: "r_time"
 }
 
 const ITEM_TOOLTIPS = {
   alpha: "alphabetical",
+  r_alpha: "reverse alphabetical",
   quantity: "quantity",
-  time: "recent first"
+  r_quantity: "reverse quantity",
+  time: "recent first",
+  r_time: "oldest first"
 }
 
 const ITEM_ORDERS_NEXT = {
-  alpha: "quantity",
-  quantity: "time",
-  time: "alpha"
+  alpha: "r_alpha",
+  r_alpha: "quantity",
+  quantity: "r_quantity",
+  r_quantity: "time",
+  time: "r_time",
+  r_time: "alpha"
 }
 
 const ITEM_ICONS = {
   alpha: "sort-alpha-down",
+  r_alpha: "sort-alpha-up",
   quantity: "sort-numeric-down-alt",
-  time: "stopwatch"
+  r_quantity: "sort-numeric-up-alt",
+  time: "stopwatch",
+  r_time: "clock-history"
 }
 
 export function OverviewPage() {
 
-  const [page_size, setPageSize] = React.useState(10)
+  let { page_size } = useFilter()
   const [relative_time, setRelativeTime] = React.useState(true)
   const [order_item, setOrderItem] = React.useState(ITEM_ORDERS.quantity)
   const [show_filter_modal, setShowFilter] = React.useState(false)
@@ -74,13 +87,7 @@ export function OverviewPage() {
               <OverlayTrigger placement="bottom" overlay={<Tooltip>Item order: {ITEM_TOOLTIPS[order_item]}</Tooltip>}>
                 <Button variant="outline-secondary" className={'bi bi-' + (ITEM_ICONS[order_item] ?? "question-lg")} onClick={() => setOrderItem(prev => ITEM_ORDERS_NEXT[prev])} />
               </OverlayTrigger>
-              <DropdownButton variant="outline-secondary" title={"Shown: " + page_size} size="sm" value={page_size}>
-                <Dropdown.ItemText>Set Number of Rows Shown</Dropdown.ItemText>
-                <Dropdown.Divider />
-                {[10, 15, 25, 50].map(elem => (
-                  <Dropdown.Item key={elem} value={elem} onClick={() => setPageSize(elem)}>{elem}</Dropdown.Item>
-                ))}
-              </DropdownButton>
+              <PageSizeSelector />
             </InputGroup>
           </Card.Header>
           <Card.Body className='p-0'>
@@ -93,9 +100,26 @@ export function OverviewPage() {
   )
 }
 
+function sort_alpha(a, b, queryClient) {
+  let a_entry = queryClient.getQueryData(['id', { id: a.item_id }])?.payload
+  let b_entry = queryClient.getQueryData(['id', { id: b.item_id }])?.payload
+  if (a_entry?.name?.toLowerCase() > b_entry?.name?.toLowerCase())
+    return 1
+  else
+    return -1
+}
+
+function sort_numeric(a, b) {
+  if (a.quantity === undefined || a.quantity === null)
+    return 1
+  if (b.quantity === undefined || b.quantity === null)
+    return -1
+  return (b.quantity - a.quantity)
+}
+
 function ItemTable({ settings }) {
   let queryClient = useQueryClient()
-  let {search_query} = useFilter()
+  let { search_query } = useFilter()
 
   let { data: state, isLoading, error } = useCurrentState(search_query)
   const [active_page, setActive] = React.useState(1)
@@ -111,18 +135,16 @@ function ItemTable({ settings }) {
 
 
   let sort_func = {
-    [ITEM_ORDERS.alpha]: (a, b) => {
-      let a_entry = queryClient.getQueryData(['id', { id: a.item_id }])?.payload
-      let b_entry = queryClient.getQueryData(['id', { id: b.item_id }])?.payload
-      if (a_entry?.name > b_entry?.name)
-        return 1
-      else
-        return -1
-    },
-    [ITEM_ORDERS.quantity]: (a, b) => (b.quantity - a.quantity),
-    [ITEM_ORDERS.time]: (a, b) => (b.start - a.start),
+    [ITEM_ORDERS.alpha]: (a, b) => sort_alpha(a, b, queryClient),
+    [ITEM_ORDERS.r_alpha]: (a, b) => sort_alpha(b, a, queryClient),
+    [ITEM_ORDERS.quantity]: (a, b) => sort_numeric(a, b),
+    [ITEM_ORDERS.r_quantity]: (a, b) => sort_numeric(b, a),
+    [ITEM_ORDERS.time]: (a, b) => sort_numeric(a, b),
+    [ITEM_ORDERS.r_time]: (a, b) => sort_numeric(b, a),
   }[settings.order_item] ?? undefined
   let sorted_state = shown_state
+
+  console.error(settings.order_item, sort_func)
 
   if (sort_func)
     sorted_state = shown_state.sort(sort_func)
@@ -143,7 +165,7 @@ function ItemTable({ settings }) {
           {location_filter.map(loc_id => (
             <th key={loc_id} colSpan={2}>
               <h3>
-                <ItemName id={loc_id} show_icon={false} />
+                <ItemName id={loc_id} show_icon={false} quantity={(grouped_state[loc_id]??[]).length} />
               </h3>
             </th>
           ))}
@@ -176,6 +198,7 @@ function DisplayEntry({ entry, settings }) {
     if (settings?.relative_time)
       return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</div>
     else
-      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:MM")}</div>
+      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:mm")}</div>
   }
+
 }

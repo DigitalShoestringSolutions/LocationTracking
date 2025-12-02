@@ -19,8 +19,11 @@ export const FilterProvider = ({ children, config }) => {
   let [search_query, setSearchQuery] = React.useState("")
   let [default_item_filter, setDefaultItemFilter] = React.useState({})
 
+  let [show_icons, setShowIcons] = React.useState(true)
   let [location_types, setLocationTypes] = React.useState([])
   let { data: location_ids } = useIdListForTypes(location_types)
+
+  const [page_size, setPageSize] = React.useState(10)
 
   React.useEffect(() => {
     //// Item filter
@@ -56,6 +59,27 @@ export const FilterProvider = ({ children, config }) => {
     }
     setLocationTypes(config_valid_location_types) // triggers useIdListForTypes
 
+    //// Show icons
+    let raw_storage_show_icons = localStorage.getItem('show_icons')
+    if (raw_storage_show_icons !== null) {
+      let storage_show_icons = JSON.parse(raw_storage_show_icons)
+      setShowIcons(storage_show_icons)
+      console.log("Show icons loaded from storage: ", storage_show_icons)
+    } else {
+      setShowIcons(true)
+      console.log("Default show icons used: true")
+    }
+    //// Page size
+    let raw_storage_page_size = localStorage.getItem('page_size')
+    if (raw_storage_page_size) {
+      let storage_page_size = JSON.parse(raw_storage_page_size)
+      setPageSize(storage_page_size)
+      console.log("Page size loaded from storage: ", storage_page_size)
+    } else {
+      setPageSize(10)
+      console.log("Default page size used: 10")
+    }
+
   }, [config]) //run once on mount
 
   React.useEffect(() => {
@@ -84,6 +108,24 @@ export const FilterProvider = ({ children, config }) => {
     }
   }
 
+  const setShowIconsWrapper = (new_show_icons) => {
+    setShowIcons(new_show_icons)
+    if (new_show_icons != undefined) {
+      localStorage.setItem("show_icons", JSON.stringify(new_show_icons))
+    } else {
+      localStorage.clear("show_icons")
+    }
+  }
+
+  const setPageSizeWrapper = (new_page_size) => {
+    setPageSize(new_page_size)
+    if (new_page_size != undefined) {
+      localStorage.setItem("page_size", JSON.stringify(new_page_size))
+    } else {
+      localStorage.clear("page_size")
+    }
+  }
+
   const filter_function = (elem) => {
     let type_tag = elem.item_id.split('@')[0]
     let filter_entry = item_filter[type_tag]
@@ -108,8 +150,13 @@ export const FilterProvider = ({ children, config }) => {
       default_item_filter: default_item_filter,
 
       filter_function: filter_function,
+      show_icons: show_icons,
+      setShowIcons: setShowIconsWrapper,
+
+      page_size: page_size,
+      setPageSize: setPageSizeWrapper,
     }}>
       {children}
     </FilterContext.Provider>
   );
-};
+}

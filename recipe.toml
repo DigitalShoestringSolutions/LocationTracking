@@ -7,35 +7,18 @@ recipe_vsn = "1.0.0"
 [solution]
     name = "Job Tracking"
     slug = "job_tracking"
-    version = "2.2.0"
+    version = "2.3.0"
     description = "Shoestring Job Tracking Starter Solution"
 
 
 
 # Service module instances present in this solution
-[service_module.scanner-1]
+[service_module.scanner]
     source="barcode_scanning"
     containers = ["sensing"]
     template.log_level = "info"
     volume.sensing.udev = "/run/udev"
-
-[service_module.scanner-2]
-    source="barcode_scanning"
-    containers = ["sensing"]
-    template.log_level = "warning"
-    volume.sensing.udev = "/run/udev"
-
-[service_module.scanner-3]
-    source="barcode_scanning"
-    containers = ["sensing"]
-    template.log_level = "warning"
-    volume.sensing.udev = "/run/udev"
-
-[service_module.scanner-4]
-    source="barcode_scanning"
-    containers = ["sensing"]
-    template.log_level = "warning"
-    volume.sensing.udev = "/run/udev"
+    depends_on.sensing = ["mqtt-broker.broker", "identity.db"]
 
 [service_module.job-db]
     source = "location_sds"
@@ -56,8 +39,8 @@ recipe_vsn = "1.0.0"
 
 [service_module.user-input]
     source = "user_input_ui"
-    containers = ["dev"]
-    ports.dev.ui = 80
+    containers = ["webserver"]
+    ports.webserver.ui = 80
 
 
 
@@ -87,8 +70,8 @@ recipe_vsn = "1.0.0"
 
 # Available module code sources which can feed the above instances
 [source.barcode_scanning]
-    git.path = "sm_barcode_dc"
-    git.tag = "v1.2.0"
+	git.path = "sm_barcode_dc"
+    git.tag = "v1.3.1"
 
 [source.location_sds]
     git.path = "django_relational_db"
@@ -100,11 +83,11 @@ recipe_vsn = "1.0.0"
 
 [source.user_input_ui]
     git.path = "react_ui"
-    git.tag = "v1.0.0"
+    git.tag = "v1.1.0"
 
 [source.dashboard_ui]
     git.path = "react_ui"
-    git.tag = "v1.0.0"
+    git.tag = "v1.1.0"
 
 [source.mqtt_broker]
     git.path = "sm_mqtt_broker"
