@@ -71,7 +71,7 @@ recipe_vsn = "1.0.0"
 # Available module code sources which can feed the above instances
 [source.barcode_scanning]
 	git.path = "sm_barcode_dc"
-    git.tag = "v1.3.0"
+    git.tag = "v1.3.1"
 
 [source.location_sds]
     git.path = "django_relational_db"
