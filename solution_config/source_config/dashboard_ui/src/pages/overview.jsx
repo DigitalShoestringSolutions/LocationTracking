@@ -144,8 +144,6 @@ function ItemTable({ settings }) {
   }[settings.order_item] ?? undefined
   let sorted_state = shown_state
 
-  console.error(settings.order_item, sort_func)
-
   if (sort_func)
     sorted_state = shown_state.sort(sort_func)
 
@@ -196,7 +194,7 @@ function DisplayEntry({ entry, settings }) {
     return <div style={{ width: "max-content" }}><i className="bi bi-hash pe-1" />{entry.quantity}</div>
   else {
     if (settings?.relative_time)
-      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</div>
+      return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow(true)}</div>
     else
       return <div style={{ width: "max-content" }}><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).format("YYYY-MM-DD HH:mm")}</div>
   }

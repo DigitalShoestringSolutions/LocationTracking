@@ -109,7 +109,7 @@ function DisplayEntry({ entry, settings }) {
   if (entry?.quantity)
     return <span><i className="bi bi-hash pe-1" />{entry.quantity}</span>
   else {
-    return <span><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow()}</span>
+    return <span><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow(true)}</span>
   }
 }
 
