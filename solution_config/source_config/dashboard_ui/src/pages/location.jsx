@@ -10,7 +10,7 @@ import { useEventsAt, useItem, useStateAt } from '../api';
 import { LoadingIndicator } from '../components/loading';
 import { ErrorIndicator } from '../components/error';
 import { ItemName } from '../components/item';
-import { useFilter } from '../FilterContext';
+import { useSettings } from '../SettingsContext';
 import { PageSizeSelector } from '../components/page_size'
 
 
@@ -20,7 +20,7 @@ export function LocationPage() {
   const current_location_id = params.location_id
 
   let { data: current_location, isLoading, error } = useItem(current_location_id)
-  const {page_size} = useFilter()
+  const {page_size} = useSettings()
 
   if (isLoading)
     return <LoadingIndicator />
@@ -104,12 +104,14 @@ function do_format(timestamp) {
 }
 
 function DisplayEntry({ entry, settings }) {
+  let { show_icons: global_show_icons } = useSettings()
+
   if (entry === undefined)
     return "";
   if (entry?.quantity)
     return <span><i className="bi bi-hash pe-1" />{entry.quantity}</span>
   else {
-    return <span><i className="bi bi-stopwatch pe-1" />{dayjs(entry.start).fromNow(true)}</span>
+    return <span>{global_show_icons ? <i className="bi bi-stopwatch pe-1" />:""}{dayjs(entry.start).fromNow(true)}</span>
   }
 }
 
