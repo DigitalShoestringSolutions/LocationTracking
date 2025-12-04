@@ -1,6 +1,10 @@
 INCLUDED_APPS = ["state"]
 
-URL_ROUTING = [("state/", "state.urls"), ("events/", "state.event_urls")]
+URL_ROUTING = [
+    ("state/", "state.urls"),
+    ("events/", "state.event_urls"),
+    ("settings/", "state.settings_urls"),
+]
 
 MQTT = {
     "broker": "mqtt.docker.local",
