@@ -24,8 +24,9 @@ import urllib.parse
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
-def identify(request,identifier_type,identifier):
+def identify(request,identifier_type,identifier=None):
     full = request.GET.get("full",False)
+    identifier = request.GET.get("identifier",identifier)
     identifier = urllib.parse.unquote(identifier)
     try:
         idfier_type = IdentifierType.objects.get(tag__exact=identifier_type)
