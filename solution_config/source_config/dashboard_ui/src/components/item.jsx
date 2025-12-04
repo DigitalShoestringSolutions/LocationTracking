@@ -1,10 +1,10 @@
 import { useItem } from "../api"
 import { NavLink } from "react-router-dom";
-import { useFilter } from "../FilterContext";
+import { useSettings } from "../SettingsContext";
 
 export function ItemName({ id, link_if_collective = true, link_if_individual = true, link = true, show_icon = true, quantity = undefined }) {
     let { data: item, isLoading, error } = useItem(id)
-    let { show_icons: global_show_icons } = useFilter()
+    let { show_icons: global_show_icons } = useSettings()
 
     const do_show_icon = global_show_icons && show_icon
 

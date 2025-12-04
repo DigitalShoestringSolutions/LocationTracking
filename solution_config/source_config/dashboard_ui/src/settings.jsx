@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form'
 import { Button, ButtonGroup, Card, Col, Container, ListGroup, Row } from "react-bootstrap";
 import { useQueryClient } from '@tanstack/react-query'
 import { useIdListForTypes } from "app/api";
-import { useFilter } from "app/FilterContext";
+import { useSettings } from "app/SettingsContext";
 
 
 export function SettingsPage() {
@@ -36,7 +36,7 @@ function LocationManager() {
   let [select_type, setSelectType] = React.useState(null)
   let [changed, setChanged] = React.useState(false)
 
-  let { location_types, location_filter, setLocationFilter } = useFilter()
+  let { location_types, location_filter, setLocationFilter } = useSettings()
   let { data: all_locations } = useIdListForTypes(location_types)
 
   React.useEffect(() => {
@@ -193,7 +193,7 @@ function ClearCache() {
 }
 
 function ShowIcons() {
-  let { show_icons, setShowIcons } = useFilter()
+  let { show_icons, setShowIcons } = useSettings()
 
   return <Row className="py-2">
     <h4 className="d-flex justify-content-between align-items-center">

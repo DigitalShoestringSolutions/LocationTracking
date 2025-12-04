@@ -1,4 +1,4 @@
-import { FilterProvider } from "app/FilterContext"
+import { SettingsProvider } from "app/SettingsContext"
 import { useConfig } from "app/api"
 
 export function ExtraPreRoutingContexts({ children }) {
@@ -7,7 +7,7 @@ export function ExtraPreRoutingContexts({ children }) {
     if (isLoading)
         return "Loading..."
     
-    return <FilterProvider config={config}>
+    return <SettingsProvider config={config}>
         {children}
-    </FilterProvider>
+    </SettingsProvider>
 }

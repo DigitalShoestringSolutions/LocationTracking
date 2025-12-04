@@ -38,13 +38,19 @@ export function useLocationList() {
 
 export function useBarcodeDetails(barcode) {
     let { data: config } = useConfig()
+    let search_params = new URLSearchParams();
+    search_params.append("identifier", barcode)
+    search_params.append("full", "true")
+
     return useQuery(
         {
             queryKey: ['item_details', { barcode: barcode }],
-            queryFn: async () => APIBackend.api_get('http://' + get_url(config) + '/id/get/' + config.api.type + '/' + encodeURIComponent(barcode) + "?full").then(
+            queryFn: async () => APIBackend.api_get('http://' + get_url(config) + '/id/get/' + config.api.type + "?" + search_params.toString()).then(
                 result => {
                     if (result.status === 404) {
                         throw new APIException("Not Found",result.status,result.payload)
+                    } else if (result.status >= 400) {
+                        throw new APIException("API Error",result.status,result.payload)
                     } else {
                         return result
                     }
