@@ -32,3 +32,7 @@ Items can be either of a 'type', of which a fungible quantity is at a location, 
 ## Barcode Scanners
 Barcode scanners attached to the pi can be configured to be associated with a location. When an 'individual' item is scanned, it is moved to the location associated with the barcode scanner.  
 Product types cannot be directly moved via barcode scanners, but instead the barcode scanners could be used with the web forms to reduce typing of product numbers.  
+
+## Expire from Complete
+Items in a special location (default `loc@4` called `Complete`) are hidden from the dashboard if they have been there a long time.  
+Which location this is and how long an item must be there before it is hidden (default 7 days) can be set in the `Settings` section in port `8010`.  
