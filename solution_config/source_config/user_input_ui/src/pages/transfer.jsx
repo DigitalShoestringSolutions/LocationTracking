@@ -12,11 +12,31 @@ import { useParams } from 'react-router-dom'
 import { useBarcodeDetails, useLocationList } from 'app/api';
 import { BarcodeEntry, DisplayItem, SelectLocation, SetQuantity } from './common'
 
+const localStorageSetWrapper = (key, local_set_func, value) => {
+    local_set_func(value)
+    if (value != undefined) {
+        localStorage.setItem(key, JSON.stringify(value))
+    } else {
+        localStorage.clear(key)
+    }
+}
 
+const doloadFromLocalStorage = (key, local_set_func, default_value) => {
+    let raw_storage_value = localStorage.getItem(key)
+    if (raw_storage_value !== null) {
+        let value = JSON.parse(raw_storage_value)
+        local_set_func(value)
+        console.log(`${key} - loaded from storage: `, value)
+    } else {
+        local_set_func(default_value)
+        console.log(`${key} - default used: `, default_value)
+    }
+}
 
 export function TransferOperation() {
     let params = useParams();
     let { data: location_list } = useLocationList()
+    const loadFromLocalStorage = React.useCallback(doloadFromLocalStorage, [])
 
 
     const current_location_id = params.location_id
@@ -31,7 +51,7 @@ export function TransferOperation() {
     let [barcode_buffer, setBarcodeBuffer] = React.useState("")
     let [barcode, setBarcode] = React.useState("")
     let [item_error, setItemError] = React.useState(undefined)
-    let [autoSubmit, setAutoSubmit] = React.useState(false)
+    let [autoSubmit, doSetAutoSubmit] = React.useState(false)
 
     let [quantity, setQuantity] = React.useState("")
     let [to, setTo] = React.useState("")
@@ -40,6 +60,8 @@ export function TransferOperation() {
 
     let toast_dispatch = useToastDispatch()
     const { sendJsonMessage } = useMQTTControl()
+
+    const setAutoSubmit = (value) => localStorageSetWrapper('auto_submit', doSetAutoSubmit, value)
 
     let { data: current_item, isLoading: barcode_loading, isError: barode_error } = useBarcodeDetails(barcode)
 
@@ -53,6 +75,10 @@ export function TransferOperation() {
             setTo(current_location.id)
         }
     }, [current_location, to])
+
+    React.useEffect(() => {
+        loadFromLocalStorage('auto_submit', setAutoSubmit, false)
+    }, [loadFromLocalStorage])
 
     React.useEffect(() => {
         if (!current_item) {

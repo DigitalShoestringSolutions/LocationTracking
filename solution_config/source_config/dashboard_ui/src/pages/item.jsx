@@ -22,7 +22,7 @@ import { useHistoryFor, useItem, useStateAt, useBulkItem } from "../api";
 import { ItemName } from "../components/item";
 import { LoadingIndicator } from "../components/loading";
 import { ErrorIndicator } from "../components/error";
-import { useFilter } from "../FilterContext";
+import { useSettings } from "../SettingsContext";
 
 import { PageSizeSelector } from '../components/page_size'
 
@@ -65,7 +65,7 @@ export function ItemPage() {
 
 function IndividualItem({ item }) {
   const [active_page, setActive] = React.useState(1)
-  const {page_size} = useFilter()
+  const {page_size} = useSettings()
 
   let { data: item_history, isLoading, error } = useHistoryFor(item.id)
 
@@ -171,7 +171,7 @@ function ItemComposition({ item }) {
 
 function CollectionItem({ item }) {
 
-  let { location_filter } = useFilter()
+  let { location_filter } = useSettings()
 
   let { isLoading: locationsLoading, data: location_details } = useBulkItem(location_filter)
 
