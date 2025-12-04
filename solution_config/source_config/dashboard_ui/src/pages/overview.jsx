@@ -106,11 +106,12 @@ function sort_alpha(a, b, queryClient) {
 }
 
 function sort_numeric(a, b) {
-  if (a.quantity === undefined || a.quantity === null)
+  console.log(a, b)
+  if (a === undefined || a === null)
     return 1
-  if (b.quantity === undefined || b.quantity === null)
+  if (b === undefined || b === null)
     return -1
-  return (b.quantity - a.quantity)
+  return (b - a)
 }
 
 function ItemTable({}) {
@@ -133,10 +134,10 @@ function ItemTable({}) {
   let sort_func = {
     [ITEM_ORDERS.alpha]: (a, b) => sort_alpha(a, b, queryClient),
     [ITEM_ORDERS.r_alpha]: (a, b) => sort_alpha(b, a, queryClient),
-    [ITEM_ORDERS.quantity]: (a, b) => sort_numeric(a, b),
-    [ITEM_ORDERS.r_quantity]: (a, b) => sort_numeric(b, a),
-    [ITEM_ORDERS.time]: (a, b) => sort_numeric(a, b),
-    [ITEM_ORDERS.r_time]: (a, b) => sort_numeric(b, a),
+    [ITEM_ORDERS.quantity]: (a, b) => sort_numeric(a?.quantity, b?.quantity),
+    [ITEM_ORDERS.r_quantity]: (a, b) => sort_numeric(b?.quantity, a?.quantity),
+    [ITEM_ORDERS.time]: (a, b) => sort_numeric(dayjs(a.start), dayjs(b.start)),
+    [ITEM_ORDERS.r_time]: (a, b) => sort_numeric(dayjs(b.start), dayjs(a.start)),
   }[item_ordering] ?? undefined
   let sorted_state = shown_state
 
@@ -158,7 +159,7 @@ function ItemTable({}) {
           {location_filter.map(loc_id => (
             <th key={loc_id} colSpan={2}>
               <h3>
-                <ItemName id={loc_id} show_icon={false} quantity={(grouped_state[loc_id]??[]).length} />
+                <ItemName id={loc_id} show_icon={false} quantity={(grouped_state[loc_id] ?? []).length} />
               </h3>
             </th>
           ))}
