@@ -46,3 +46,9 @@ class ProductionEventAdmin(admin.ModelAdmin):
     list_filter = ["item_id", "location_link"]
     ordering = ["event_id"]
     inlines = [InputsInline]
+
+@admin.register(models.Setting)
+class SettingAdmin(admin.ModelAdmin):
+    list_display = ['key','value']
+    fields = ('key','value')
+    ordering = ['key']

@@ -16,7 +16,7 @@ import datetime
 import dateutil.parser
 from functools import lru_cache 
 
-from .models import State, TransferEvent, ProductionEvent, ProductionEventInput
+from .models import State, TransferEvent, ProductionEvent, ProductionEventInput, Setting
 from .serializers import (
     StateSerializer,
     TransferEventSerializer,
@@ -24,10 +24,11 @@ from .serializers import (
     ProductionEventSerializer,
 )
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
-#@lru_cache(maxsize=32)  # beware adding a cache like this can cause recently created items to not be found by search!
+# @lru_cache(maxsize=32)  # beware adding a cache like this can cause recently created items to not be found by search!
 def search_by_name_query(query):
     import requests
 
@@ -56,6 +57,26 @@ def getAll(request):
         valid_ids = search_by_name_query(query)
         # logger.info(f"search query '{query}' returned ids: {valid_ids}")
         q = q & Q(item_id__in=valid_ids)
+
+    settings_dict = {s.key: s.value for s in Setting.objects.filter(key__in=["completed_location","completed_duration_days"])}
+    completed_location = settings_dict.get("completed_location",None)
+    filter_completed = completed_location is not None
+    if filter_completed:
+        __dt = -1 * (time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)
+        tz = datetime.timezone(datetime.timedelta(seconds=__dt))
+
+        end_of_today = datetime.datetime.combine(
+            datetime.datetime.now(tz=tz), datetime.datetime.min.time(),tzinfo=tz
+        )+ datetime.timedelta(days=1)
+
+        filter_days = int(settings_dict.get("completed_duration_days",1))
+        filter_completed_timestamp = end_of_today - datetime.timedelta(days=filter_days)
+
+        q = q & ~(
+            Q(start__lte=filter_completed_timestamp)
+            & Q(location_link__exact=completed_location)
+        )
+
     qs = State.objects.filter(q).order_by("-start")
     serializer = StateSerializer(qs, many=True)
     # logger.info(f"results: {serializer.data}")
@@ -298,3 +319,22 @@ def eventsAtLocLink(request, location_link):
     all.sort(key=lambda entry: entry["timestamp"])
 
     return Response(all)
+
+@api_view(("GET","POST"))
+@renderer_classes((JSONRenderer, BrowsableAPIRenderer))
+def settings(request, key):
+    if request.method == "GET":
+        if key is None or key == "":
+            qs = Setting.objects.all()
+        else:
+            qs = Setting.objects.filter(key=key)
+        settings_dict = {s.key: s.value for s in qs}
+        return Response(settings_dict)
+    elif request.method == "POST":
+        for key, value in request.data.items():
+            setting_obj, created = Setting.objects.update_or_create(
+                key=key, defaults={"value": value}
+            )
+        qs = Setting.objects.all()
+        settings_dict = {s.key: s.value for s in qs}
+        return Response(settings_dict)
