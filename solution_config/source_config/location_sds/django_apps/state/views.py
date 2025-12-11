@@ -72,10 +72,10 @@ def getAll(request):
         filter_days = int(settings_dict.get("completed_duration_days",1))
         filter_completed_timestamp = end_of_today - datetime.timedelta(days=filter_days)
 
-        q = q & ~(
+        q = q & (Q(quantity__isnull=True) | ~(
             Q(start__lte=filter_completed_timestamp)
             & Q(location_link__exact=completed_location)
-        )
+        ))
 
     qs = State.objects.filter(q).order_by("-start")
     serializer = StateSerializer(qs, many=True)
