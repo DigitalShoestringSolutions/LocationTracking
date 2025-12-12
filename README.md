@@ -36,3 +36,4 @@ Product types cannot be directly moved via barcode scanners, but instead the bar
 ## Expire from Complete
 Items in a special location (default `loc@4` called `Complete`) are hidden from the dashboard if they have been there a long time.  
 Which location this is and how long an item must be there before it is hidden (default 7 days) can be set in the `Settings` section in port `8010`. The unit of time is days and the value entered must be an integer.  
+This only applies to Individual Products; Product Types are never hidden.  
