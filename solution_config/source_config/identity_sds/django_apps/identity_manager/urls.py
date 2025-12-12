@@ -13,6 +13,7 @@ urlpatterns= [
         path('list',views.listByIDType), 
         path('by-name',views.searchNames),
         path('types',views.listTypes), 
+        path('get/<str:identifier_type>',views.identify),
         path('get/<str:identifier_type>/<str:identifier>',views.identify),
         path('upload',views.uploadIdentities),
         path('<str:id>',views.getID), 

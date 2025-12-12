@@ -1,11 +1,11 @@
 import React from "react"
 import { Button, Modal, Spinner } from "react-bootstrap"
 import { useIdListForTypes, useIdTypes } from "../api"
-import { useFilter } from "../FilterContext"
+import { useSettings } from "../SettingsContext"
 
 export function FilterModal({ show, handleClose }) {
 
-  let { item_filter, setItemFilter, default_item_filter } = useFilter()
+  let { item_filter, setItemFilter, default_item_filter } = useSettings()
 
   let [state, setState] = React.useState(item_filter)
 
@@ -32,7 +32,7 @@ export function FilterModal({ show, handleClose }) {
 function FilterBody({ state, setState }) {
   let [lists, doSetLists] = React.useState({})
   let { data: types, isLoading, error } = useIdTypes()
-  let { location_types } = useFilter()
+  let { location_types } = useSettings()
 
   if (isLoading) {
     return error !== null ? <h1>{error}</h1> : <div><Spinner></Spinner> <h2 className='d-inline'>Loading...</h2></div>
