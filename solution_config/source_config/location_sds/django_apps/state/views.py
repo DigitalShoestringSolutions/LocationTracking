@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.http import HttpResponse
-from django.conf import settings
+from django.conf import settings as django_settings
 from rest_framework import viewsets, status
 from rest_framework.decorators import (
     action,
@@ -33,7 +33,7 @@ def search_by_name_query(query):
     import requests
 
     response = requests.get(
-        f"http://{settings.ID_SERVICE_URL}/id/by-name", params={"q": query}
+        f"http://{django_settings.ID_SERVICE_URL}/id/by-name", params={"q": query}
     )
     if response.status_code == 200:
         return [entry["id"] for entry in response.json()]
@@ -72,7 +72,7 @@ def getAll(request):
         filter_days = int(settings_dict.get("completed_duration_days",1))
         filter_completed_timestamp = end_of_today - datetime.timedelta(days=filter_days)
 
-        q = q & (Q(quantity__isnull=True) | ~(
+        q = q & (Q(quantity__isnull=False) | ~(
             Q(start__lte=filter_completed_timestamp)
             & Q(location_link__exact=completed_location)
         ))
