@@ -7,7 +7,7 @@ recipe_vsn = "1.0.0"
 [solution]
     name = "Job Tracking"
     slug = "job_tracking"
-    version = "2.3.0"
+    version = "2.4.1"
     description = "Shoestring Job Tracking Starter Solution"
 
 
