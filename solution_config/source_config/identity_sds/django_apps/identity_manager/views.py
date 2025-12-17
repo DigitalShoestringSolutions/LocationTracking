@@ -18,7 +18,7 @@ import os
 import tempfile
 
 from .models import Identifier, IdentifierType, IdentifierPattern, IdentityEntry, IdentityType
-from .serializers import IdentitySerializer, IdentitySerializerFull, IdentityTypeSerializer
+from .serializers import IdentitySerializer, IdentitySerializerFull, IdentityTypeSerializer,IdentitySerializerPretty
 from .forms import UploadFileForm
 import urllib.parse
 
@@ -27,7 +27,6 @@ import urllib.parse
 def identify(request,identifier_type,identifier=None):
     full = request.GET.get("full",False)
     identifier = request.GET.get("identifier",identifier)
-    identifier = urllib.parse.unquote(identifier)
     try:
         idfier_type = IdentifierType.objects.get(tag__exact=identifier_type)
     except IdentifierType.DoesNotExist:
@@ -48,7 +47,7 @@ def identify(request,identifier_type,identifier=None):
                 print(f"{identifier_type}:{identifier}>Created:{identity.get_id()}")
                 has_match = True
         if not has_match:
-            return Response(status=404)
+            return Response({"no_match":identifier},status=404)
 
     if full is not False:
         serializer = IdentitySerializerFull(identity)
@@ -68,6 +67,9 @@ def searchNames(request):
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))
 def getID(request,id=None):
+
+    serializer_cls = IdentitySerializerPretty if request.GET.get("pretty",False) else IdentitySerializerFull
+
     if id is not None:
         *id_type, id_num = id.split("@")
 
@@ -76,7 +78,7 @@ def getID(request,id=None):
         except IdentityEntry.DoesNotExist:
             return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = IdentitySerializerFull(identity, many=False)
+        serializer = serializer_cls(identity, many=False)
     else:
         raw_ids = request.GET.getlist("id")
         ids = [urllib.parse.unquote(id) for id in raw_ids]
@@ -91,10 +93,9 @@ def getID(request,id=None):
         except IdentityEntry.DoesNotExist:
             return Response({"reason":"Identity Not Found"},status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = IdentitySerializerFull(identities,many=True)
+        serializer = serializer_cls(identities, many=True)
 
     return Response(serializer.data)
-
 
 @api_view(('GET',))
 @renderer_classes((JSONRenderer,BrowsableAPIRenderer))

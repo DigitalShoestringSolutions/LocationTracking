@@ -4,6 +4,8 @@ URL_ROUTING = [
     ("state/", "state.urls"),
     ("events/", "state.event_urls"),
     ("settings/", "state.settings_urls"),
+    ("status/", "state.status_urls"),
+    ("report/", "state.report_urls"),
 ]
 
 MQTT = {

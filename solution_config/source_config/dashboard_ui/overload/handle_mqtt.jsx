@@ -13,6 +13,10 @@ export async function new_message_action(dispatch, queryClient, message) {
         queryClient.refetchQueries({ queryKey: ["state_at", { id: message?.payload?.location_link }] })
         queryClient.refetchQueries({ queryKey: ['history_for', { id: message.payload.item_id }] })
         queryClient.refetchQueries({ queryKey: ['events_at', { id: message?.payload?.location_link }] })
+    } else if (message && (message.topic.match("location_state/status"))){
+        console.log("status update received on ", message.topic)
+        let id = message?.payload?.item_id
+        queryClient.refetchQueries({ queryKey: ['current_status', { tag_id: id }] })
     }
 }
 

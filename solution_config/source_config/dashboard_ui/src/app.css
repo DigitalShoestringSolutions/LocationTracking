@@ -9,3 +9,46 @@
   padding: 0;
   padding-left: 3.5rem;
 }
+
+.tag-icon {
+  background-color: transparent;
+  border: none;
+  font-size: 1rem;
+  margin: auto;
+  padding: 0;
+  display: flex;
+}
+
+.tag-icon:hover {
+  /* text-shadow: 0 0 5px #ff6f00, 0 0 15px #ff6f00, 0 0 30px #ff6f00; */
+  background-color: transparent;
+  color: var(--bs-primary);
+  cursor: pointer;
+}
+
+.tag-icon:active {
+  background-color: transparent !important;
+  color: black !important;
+}
+
+.has-note{
+  position: relative;
+  overflow: hidden;
+}
+.has-note:after {
+  content: '';
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 10px 10px 0;
+  right: 0;
+  top: 0;
+  position: absolute;
+}
+.has-note.dark:after {
+  border-color: transparent var(--bs-primary-border-subtle) transparent transparent;
+}
+
+.has-note.light:after{
+  border-color: transparent var(--bs-primary) transparent transparent;
+}

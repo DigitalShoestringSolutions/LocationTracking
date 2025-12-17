@@ -27,6 +27,19 @@ class IdentitySerializerFull(serializers.ModelSerializer):
         return rep
 
 
+class IdentitySerializerPretty(serializers.ModelSerializer):
+    class Meta:
+        model = IdentityEntry
+        fields = ("name",)
+        depth = 1
+
+    def to_representation(self, obj):
+        rep = super().to_representation(obj)
+        rep["id"] = obj.get_id()
+        rep["type"] = obj.type.title
+        return rep
+
+
 class IdentityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model=IdentityType
