@@ -46,7 +46,7 @@ export function useCurrentState(search_query = "") {
 
     const searchParams = new URLSearchParams();
     if (search_query) {
-        searchParams.append("q", encodeURIComponent(search_query))
+        searchParams.append("q", search_query)
     }
     let search_string = searchParams.size > 0 ? "?" + searchParams.toString() : ""
     return useQuery(
