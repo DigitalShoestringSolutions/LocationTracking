@@ -7,7 +7,7 @@ recipe_vsn = "1.0.0"
 [solution]
     name = "Job Tracking"
     slug = "job_tracking"
-    version = "2.4.1"
+    version = "2.5.0"
     description = "Shoestring Job Tracking Starter Solution"
 
 
@@ -34,8 +34,8 @@ recipe_vsn = "1.0.0"
 
 [service_module.dashboard]
     source = "dashboard_ui"
-    containers = ["dev"]
-    ports.dev.ui = 8000
+    containers = ["webserver"]
+    ports.webserver.ui = 8000
 
 [service_module.user-input]
     source = "user_input_ui"
@@ -83,11 +83,11 @@ recipe_vsn = "1.0.0"
 
 [source.user_input_ui]
     git.path = "react_ui"
-    git.tag = "v1.1.0"
+    git.tag = "v1.1.1"
 
 [source.dashboard_ui]
     git.path = "react_ui"
-    git.tag = "v1.1.0"
+    git.tag = "v1.1.1"
 
 [source.mqtt_broker]
     git.path = "sm_mqtt_broker"
