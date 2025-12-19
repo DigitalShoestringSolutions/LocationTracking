@@ -34,8 +34,8 @@ recipe_vsn = "1.0.0"
 
 [service_module.dashboard]
     source = "dashboard_ui"
-    containers = ["webserver"]
-    ports.webserver.ui = 8000
+    containers = ["dev"]
+    ports.dev.ui = 8000
 
 [service_module.user-input]
     source = "user_input_ui"
@@ -75,11 +75,11 @@ recipe_vsn = "1.0.0"
 
 [source.location_sds]
     git.path = "django_relational_db"
-    git.tag = "v1.0.0"
+    git.tag = "v1.1.0"
 
 [source.identity_sds]
     git.path = "django_relational_db"
-    git.tag = "v1.0.0"
+    git.tag = "v1.1.0"
 
 [source.user_input_ui]
     git.path = "react_ui"

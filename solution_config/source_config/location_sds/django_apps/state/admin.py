@@ -52,3 +52,19 @@ class SettingAdmin(admin.ModelAdmin):
     list_display = ['key','value']
     fields = ('key','value')
     ordering = ['key']
+
+from .admin_form import StatusForm
+
+@admin.register(models.Status)
+class StatusAdmin(admin.ModelAdmin):
+    # look at change_list_template and https://github.com/django/django/blob/main/django/contrib/admin/templates/admin/change_list.html to add color representation in list view
+    form = StatusForm
+    list_display = ['label','color','icon']
+
+@admin.register(models.ItemStatus)
+class ItemStatusAdmin(admin.ModelAdmin):
+    list_display = ['item_id','location_link','status']
+
+@admin.register(models.Note)
+class NoteAdmin(admin.ModelAdmin):
+    list_display = ['note_id','item_id','location_link']

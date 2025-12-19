@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import State, TransferEvent, ProductionEvent, ProductionEventInput
+from .models import State, TransferEvent, ProductionEvent, ProductionEventInput, Status, ItemStatus, Note
 
 class StateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +49,18 @@ class ProductionEventInputSerializer(serializers.ModelSerializer):
             "quantity",
             "timestamp",
         )
+
+class StatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Status
+        fields = "__all__"
+
+class ItemStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemStatus
+        fields = "__all__"
+
+class NoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = "__all__"

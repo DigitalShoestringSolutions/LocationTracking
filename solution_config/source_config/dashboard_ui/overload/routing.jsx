@@ -3,7 +3,8 @@ import { useMQTTState } from 'core/context/mqtt'
 import { Button, Nav, OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Routes, Route, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { SettingsPage } from 'app/settings';
+import { SettingsPage } from 'app/pages/settings';
+import { ReportsPage } from 'app/pages/reports';
 import { OverviewPage } from 'app/pages/overview';
 import { LocationPage } from 'app/pages/location';
 import { ItemPage } from 'app/pages/item';
@@ -15,6 +16,7 @@ export function Routing() {
     <Routes>
       <Route path='/' element={<Base />}>
         <Route path='/settings' element={<SettingsPage />} />
+        <Route path='/reports' element={<ReportsPage />} />
         <Route path='/loc/:location_id' element={<LocationPage />} />
         <Route path='/item/:item_id' element={<ItemPage />} />
         <Route index element={<OverviewPage />}></Route>
@@ -55,6 +57,7 @@ function Base() {
       </div>
       <div>
         <Nav variant="pills" fill={true} className="me-auto">
+          <SidebarLink icon="bi-file-earmark-bar-graph" label="Reports" to="/reports" />
           <SidebarLink icon="bi-gear" label="Settings" to="/settings" />
         </Nav>
         <OverlayTrigger
