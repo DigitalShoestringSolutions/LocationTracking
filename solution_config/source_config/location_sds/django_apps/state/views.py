@@ -551,7 +551,7 @@ def report(request):
                     "To ID",
                     "To Type",
                     "To Name",
-                    "Timestamp"
+                    "Timestamp",
                     "Quantity",
                 ]
             )
