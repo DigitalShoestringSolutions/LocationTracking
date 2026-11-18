@@ -7,7 +7,7 @@ recipe_vsn = "1.0.0"
 [solution]
     name = "Job Tracking"
     slug = "job_tracking"
-    version = "2.5.1"
+    version = "2.5.2"
     description = "Shoestring Job Tracking Starter Solution"
 
 
@@ -71,7 +71,7 @@ recipe_vsn = "1.0.0"
 # Available module code sources which can feed the above instances
 [source.barcode_scanning]
 	git.path = "sm_barcode_dc"
-    git.tag = "v1.3.2"
+    git.tag = "v1.3.3"
 
 [source.location_sds]
     git.path = "django_relational_db"
@@ -83,11 +83,11 @@ recipe_vsn = "1.0.0"
 
 [source.user_input_ui]
     git.path = "react_ui"
-    git.tag = "v1.1.1"
+    git.tag = "v1.1.2"
 
 [source.dashboard_ui]
     git.path = "react_ui"
-    git.tag = "v1.1.1"
+    git.tag = "v1.1.2"
 
 [source.mqtt_broker]
     git.path = "sm_mqtt_broker"
